@@ -3,6 +3,7 @@ package com.broomhandleus.maximus.cowpitalism;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 
 public class RulesActivity extends AppCompatActivity {
 
@@ -15,6 +16,7 @@ public class RulesActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("The Rules of Play");
     }
 
 }

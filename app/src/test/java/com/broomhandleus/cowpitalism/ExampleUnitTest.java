@@ -1,4 +1,4 @@
-package com.example.maxim_000.cowpitalism;
+package com.broomhandleus.cowpitalism;
 
 import org.junit.Test;
 

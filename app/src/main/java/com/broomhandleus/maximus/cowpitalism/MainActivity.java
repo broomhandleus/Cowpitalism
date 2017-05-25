@@ -1,5 +1,6 @@
 package com.broomhandleus.maximus.cowpitalism;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         rulesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Rules button is clicked.");
+                Intent screenSwitch = new Intent(getApplication(), RulesActivity.class);
+                startActivity(screenSwitch);
             }
         });
     }

@@ -1,12 +1,15 @@
 package com.broomhandleus.maximus.cowpitalism;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -24,6 +27,9 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Cowpitalism");
 
         final Player player = new Player("Beta_Tester");
+
+        // Game Timer
+        final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);
 
         // References to all TextViews
         TextView playerName = (TextView) findViewById(R.id.titleName);
@@ -44,10 +50,20 @@ public class InGameActivity extends AppCompatActivity {
         cowButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum = Double.parseDouble(numberInput.getText().toString());
+                double addNum;
+                if (!numberInput.getText().toString().isEmpty()) {
+                    addNum = Double.parseDouble(numberInput.getText().toString());
+                } else {
+                    addNum = 0.0;
+                }
                 player.cows = player.cows + addNum;
                 cowCount.setText("Cows: " + player.cows);
                 numberInput.setText("");
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
 
@@ -55,10 +71,20 @@ public class InGameActivity extends AppCompatActivity {
         horseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum = Double.parseDouble(numberInput.getText().toString());
+                double addNum;
+                if (!numberInput.getText().toString().isEmpty()) {
+                    addNum = Double.parseDouble(numberInput.getText().toString());
+                } else {
+                    addNum = 0.0;
+                }
                 player.horses = player.horses + addNum;
-                cowCount.setText("Horses: " + player.cows);
+                horseCount.setText("Horses: " + player.horses);
                 numberInput.setText("");
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
 
@@ -66,13 +92,47 @@ public class InGameActivity extends AppCompatActivity {
         hayBaleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum = Double.parseDouble(numberInput.getText().toString());
+                double addNum;
+                if (!numberInput.getText().toString().isEmpty()) {
+                    addNum = Double.parseDouble(numberInput.getText().toString());
+                } else {
+                    addNum = 0.0;
+                }
                 player.hayBales = player.hayBales + addNum;
+                hayBaleCount.setText("Hay Bales: " + player.hayBales);
                 numberInput.setText("");
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
+            }
+        });
+
+        Button gasButton = (Button) findViewById(R.id.gasButton);
+        gasButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                double addNum;
+                if (!numberInput.getText().toString().isEmpty()) {
+                    addNum = Double.parseDouble(numberInput.getText().toString());
+                } else {
+                    addNum = 0.0;
+                }
+                double moreMoney = addNum * player.milk;
+                player.money += moreMoney;
+                moneyCount.setText("Money: $" + player.money);
+                numberInput.setText("");
+                InputMethodManager inputManager = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                        InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
 
         playerName.setText(player.name);
+        gameTimer.start();
     }
 
     // Private Class for keeping track of player data

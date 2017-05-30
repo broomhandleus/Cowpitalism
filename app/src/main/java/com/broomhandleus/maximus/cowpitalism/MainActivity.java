@@ -22,7 +22,8 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Start button is clicked.");
+                Intent screenSwitch = new Intent(getApplication(), InGameActivity.class);
+                startActivity(screenSwitch);
             }
         });
 

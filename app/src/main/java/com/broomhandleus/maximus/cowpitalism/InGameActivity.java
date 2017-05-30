@@ -18,4 +18,28 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    private class Player {
+
+        private int cows;
+        private int horses;
+        private int money;
+        private int hayBales;
+        private int semis;
+        private int tankers;
+        private int barns;
+        private boolean chicken;
+
+        public Player() {
+            cows = 0;
+            horses = 0;
+            money = 0;
+            hayBales = 0;
+            semis = 0;
+            tankers = 0;
+            barns = 0;
+            chicken = false;
+        }
+
+
+    }
 }

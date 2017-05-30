@@ -47,11 +47,11 @@ public class InGameActivity extends AppCompatActivity {
         cowButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum;
+                int addNum;
                 if (!numberInput.getText().toString().isEmpty()) {
-                    addNum = Double.parseDouble(numberInput.getText().toString());
+                    addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0.0;
+                    addNum = 0;
                 }
                 player.cows = player.cows + addNum;
                 cowCount.setText("Cows: " + player.cows);
@@ -68,11 +68,11 @@ public class InGameActivity extends AppCompatActivity {
         horseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum;
+                int addNum;
                 if (!numberInput.getText().toString().isEmpty()) {
-                    addNum = Double.parseDouble(numberInput.getText().toString());
+                    addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0.0;
+                    addNum = 0;
                 }
                 player.horses = player.horses + addNum;
                 horseCount.setText("Horses: " + player.horses);
@@ -89,11 +89,11 @@ public class InGameActivity extends AppCompatActivity {
         hayBaleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum;
+                int addNum;
                 if (!numberInput.getText().toString().isEmpty()) {
-                    addNum = Double.parseDouble(numberInput.getText().toString());
+                    addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0.0;
+                    addNum = 0;
                 }
                 player.hayBales = player.hayBales + addNum;
                 hayBaleCount.setText("Hay Bales: " + player.hayBales);
@@ -208,15 +208,14 @@ public class InGameActivity extends AppCompatActivity {
     private class Player {
 
         public String name;
-        public double cows;
-        public double milk;
-        public double horses;
+        public int cows;
+        public int milk;
+        public int horses;
         public double money;
-        public double hayBales;
-        public double semis;
-        public double tankers;
-        public double barns;
-        public boolean chicken;
+        public int hayBales;
+        public int semis;
+        public int tankers;
+        public int barns;
 
         public Player(String newName) {
             name = newName;
@@ -228,7 +227,6 @@ public class InGameActivity extends AppCompatActivity {
             semis = 0;
             tankers = 0;
             barns = 0;
-            chicken = false;
         }
     }
 }

@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.TextView;
 
 public class InGameActivity extends AppCompatActivity {
 
@@ -16,20 +17,28 @@ public class InGameActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Cowpitalism");
+
+        Player player = new Player("Beta_Tester");
+
+        TextView playerName = (TextView) findViewById(R.id.titleName);
+        playerName.setText(player.name);
     }
 
     private class Player {
 
-        private int cows;
-        private int horses;
-        private int money;
-        private int hayBales;
-        private int semis;
-        private int tankers;
-        private int barns;
-        private boolean chicken;
+        public String name;
+        public int cows;
+        public int horses;
+        public int money;
+        public int hayBales;
+        public int semis;
+        public int tankers;
+        public int barns;
+        public boolean chicken;
 
-        public Player() {
+        public Player(String newName) {
+            name = newName;
             cows = 0;
             horses = 0;
             money = 0;
@@ -39,7 +48,5 @@ public class InGameActivity extends AppCompatActivity {
             barns = 0;
             chicken = false;
         }
-
-
     }
 }

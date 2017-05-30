@@ -45,15 +45,18 @@
 
                 <TextView
                     android:id="@+id/purposeparagraph"
-                    android:layout_width="341dp"
-                    android:layout_height="200dp"
+                    android:layout_width="310dp"
+                    android:layout_height="267dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:layout_marginTop="13dp"
-                    android:text='Cowpitalism is a game that is meant to played while on a long car trip with several other people. The purpose of the game is to collect as many cows as possible through a number of different methods. The main method is to call out cows or fields of cows that are passed while driving along the road. Whenever you spot some cows, call out, "My Cows!" Then, you and the other people playing can either count the cows or agree on a suitable estimate for the number of cows spotted. Now enter that number into the box provided and click the "Cow" button in order to add them to your total. Additional rules to the game are found below.'
+                    android:text='Cowpitalism is a game that is meant to played while on a long car trip with several other people. The purpose of the game is to collect as many cows as possible through a number of different methods. The main method is to call out cows or fields of cows that are passed while driving along the road. Whenever you spot some cows, call out, "My Cows!" Then, you and the other people playing can either count the cows or agree on a suitable estimate for the number of cows spotted. Remember, only the first person to call out that particular cow or group of cows can add them to their total. Now enter that number into the box provided and click the "Cow" button in order to add them to your total. Additional rules to the game are found below.'
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/purpose" />
+                    app:layout_constraintTop_toBottomOf="@+id/purpose"
+                    app:layout_constraintHorizontal_bias="0.518"
+                    tools:layout_editor_absoluteY="51dp"
+                    tools:layout_editor_absoluteX="44dp" />
 
                 <TextView
                     android:id="@+id/rulesTitle"
@@ -70,18 +73,18 @@
                     app:layout_constraintTop_toBottomOf="@+id/purposeparagraph" />
 
                 <TextView
-                    android:id="@+id/textView8"
-                    android:layout_width="340dp"
-                    android:layout_height="171dp"
+                    android:id="@+id/rules"
+                    android:layout_width="311dp"
+                    android:layout_height="796dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginTop="20dp"
-                    android:text="TextView"
+                    android:layout_marginTop="19dp"
+                    android:text="1. Call out a graveyard to eliminate all other players' cows. \n\n2. Call out a church to double your cow count. \n\n3. Call out horses as well, and if you spot a water tower, you can exchange each horse for 10 cows (remember, graveyards only eliminate cows, so horses is a good way to have some insurance if you lose your cows). \n\n4. While playing, your cows will constantly produce milk, however, you can only hold 25 gallons of milk per cow without extra storage. Call out tanker trucks on the road to increase storage by 1000 gallons each. \n\n5. When passing a gas station, be the first to call out the unleaded gas price in order to sell your milk at that price per gallon (you can sell any amount you wish, you will be prompted). \n\n6. Call out hay bales and stockpile them in order to increase the price of selling milk by 1% per hay bale (you can use any number of hay bales when selling, you will be prompted). \n\n7. Money collected from selling milk will be collected. This money can be used to buy cows for $500 each, or horses for $4500 each. \n\n8. Call out burger joints. If you spot a burger joint that has the word &quot;burger&quot; in its name (such as &quot;Whataburger&quot;) you will eliminate half of everyone else's cows. \n\n9. Spot a chicken restaurant with the words &quot;Chick&quot; or &quot;Chicken&quot; in the title in order to be protected by the next burger joint call. \n\n10. Call out semi trucks in order to reduce transport costs and therefore increase milk selling cost by 3% each. \n\n11. Call out barns in order to protect 20 cows each from graveyards or burger joints."
+                    app:layout_constraintHorizontal_bias="0.517"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/rulesTitle"
-                    app:layout_constraintHorizontal_bias="0.517"
-                    tools:layout_editor_absoluteY="320dp" />
+                    tools:layout_editor_absoluteY="388dp" />
             </android.support.constraint.ConstraintLayout>
         </LinearLayout>
     </ScrollView>

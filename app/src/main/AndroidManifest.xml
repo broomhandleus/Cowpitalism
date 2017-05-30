@@ -19,8 +19,16 @@
         <activity
             android:name=".RulesActivity"
             android:label="@string/title_activity_rules"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName="MainActivity">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".InGameActivity"
+            android:label="@string/title_activity_in_game"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.broomhandleus.maximus.cowpitalism.MainActivity" />
         </activity>
     </application>
 

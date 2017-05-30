@@ -216,6 +216,7 @@ public class InGameActivity extends AppCompatActivity {
         public int semis;
         public int tankers;
         public int barns;
+        private int kitties;
 
         public Player(String newName) {
             name = newName;
@@ -227,6 +228,9 @@ public class InGameActivity extends AppCompatActivity {
             semis = 0;
             tankers = 0;
             barns = 0;
+
+            // everyone should have a kittie... or 5
+            kitties = (int) (5 * Math.random());
         }
     }
 }

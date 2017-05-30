@@ -189,6 +189,17 @@ public class InGameActivity extends AppCompatActivity {
             }
         });
 
+        Button waterTowerButton = (Button) findViewById(R.id.waterTowerButton);
+        waterTowerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                player.cows = player.cows + (10 * player.horses);
+                player.horses = 0;
+                cowCount.setText("Cows: " + player.cows);
+                horseCount.setText("Horses: 0");
+            }
+        });
+
         playerName.setText(player.name);
         gameTimer.start();
     }

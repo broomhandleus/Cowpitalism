@@ -269,6 +269,14 @@
                 android:layout_marginLeft="10dp"/>
 
             <Button
+                android:id="@+id/waterTowerButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:text="Water Tower" />
+
+            <Button
                 android:id="@+id/tankerButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -332,7 +340,7 @@
         app:layout_constraintHorizontal_bias="0.294" />
 
     <TextView
-        android:id="@+id/textView10"
+        android:id="@+id/gameTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"

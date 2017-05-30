@@ -2,8 +2,6 @@ package com.broomhandleus.maximus.cowpitalism;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -11,9 +9,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 public class InGameActivity extends AppCompatActivity {
 
@@ -137,6 +134,58 @@ public class InGameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 player.cows *= 2;
                 cowCount.setText("Cows: " + player.cows);
+            }
+        });
+
+        Button graveyardButton = (Button) findViewById(R.id.graveyardButton);
+        graveyardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.barns != 0) {
+                    player.cows = Math.min(player.cows, player.barns * 20);
+                } else {
+                    player.cows = 0;
+                }
+                cowCount.setText("Cows: " + player.cows);
+            }
+        });
+
+        Button tankerButton = (Button) findViewById(R.id.tankerButton);
+        tankerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tankerCount.setText("Tankers: " + ++player.tankers);
+            }
+        });
+
+        Button semiButton = (Button) findViewById(R.id.semiButton);
+        semiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                semiCount.setText("Semis: " + ++player.semis);
+            }
+        });
+
+        Button barnButton = (Button) findViewById(R.id.barnButton);
+        barnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                barnCount.setText("Barns: " + ++player.barns);
+            }
+        });
+
+        final Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
+
+        Button burgerButton = (Button) findViewById(R.id.burgerButton);
+        burgerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!chickenSwitch.isChecked()) {
+                    player.cows = Math.max(player.cows / 2, player.barns * 20);
+                    cowCount.setText("Cows: " + player.cows);
+                } else {
+                    chickenSwitch.toggle();
+                }
             }
         });
 

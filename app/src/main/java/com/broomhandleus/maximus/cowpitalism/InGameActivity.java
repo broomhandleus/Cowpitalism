@@ -131,6 +131,15 @@ public class InGameActivity extends AppCompatActivity {
             }
         });
 
+        Button churchButton = (Button) findViewById(R.id.churchButton);
+        churchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                player.cows *= 2;
+                cowCount.setText("Cows: " + player.cows);
+            }
+        });
+
         playerName.setText(player.name);
         gameTimer.start();
     }

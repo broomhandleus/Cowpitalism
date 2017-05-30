@@ -29,6 +29,7 @@ public class InGameActivity extends AppCompatActivity {
 
         public String name;
         public int cows;
+        public int milk;
         public int horses;
         public int money;
         public int hayBales;
@@ -40,6 +41,7 @@ public class InGameActivity extends AppCompatActivity {
         public Player(String newName) {
             name = newName;
             cows = 0;
+            milk = 0;
             horses = 0;
             money = 0;
             hayBales = 0;

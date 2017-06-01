@@ -32,9 +32,14 @@ public class InGameActivity extends AppCompatActivity {
 
         final TextView playerName = (TextView) findViewById(R.id.titleName);
         final AlertDialog nameInput = new AlertDialog.Builder(this).create();
+        final TextView milkCount = (TextView) findViewById(R.id.milkCount);
+
+        // Game Timer
+        final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);
+
         final EditText input = new EditText(this);
         nameInput.setTitle("Player Creation");
-        nameInput.setMessage("Please Choose a Nickname");
+        nameInput.setMessage("Please Choose a Nickname:");
         nameInput.setView(input);
         nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
                 new DialogInterface.OnClickListener() {
@@ -42,17 +47,27 @@ public class InGameActivity extends AppCompatActivity {
                         player = new Player(input.getText().toString());
                         playerName.setText(player.name.toUpperCase());
                         Log.d(TAG, input.getText().toString());
+                        gameTimer.start();
+                        gameTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                            @Override
+                            public void onChronometerTick(Chronometer chronometer) {
+                                if (gameTimer.getText().toString().substring(gameTimer.length() - 2).equals("00")) {
+                                    if ((player.milk + player.cows) < ((player.cows * 25) + (player.tankers * 1000))) {
+                                        player.milk += player.cows;
+                                    } else {
+                                        player.milk = (player.cows * 25) + (player.tankers * 1000);
+                                    }
+                                    milkCount.setText("Milk: " + player.milk + " gallons");
+                                }
+                            }
+                        });
                         nameInput.dismiss();
                     }
                 });
         nameInput.show();
 
-        // Game Timer
-        final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);
-
         // References to all TextViews
         final TextView cowCount = (TextView) findViewById(R.id.cowCount);
-        final TextView milkCount = (TextView) findViewById(R.id.milkCount);
         final TextView moneyCount = (TextView) findViewById(R.id.moneyCount);
         final TextView horseCount = (TextView) findViewById(R.id.horseCount);
         final TextView barnCount = (TextView) findViewById(R.id.barnCount);
@@ -79,7 +94,6 @@ public class InGameActivity extends AppCompatActivity {
                 numberInput.setText("");
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
-
                 inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
@@ -100,7 +114,6 @@ public class InGameActivity extends AppCompatActivity {
                 numberInput.setText("");
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
-
                 inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
@@ -121,7 +134,6 @@ public class InGameActivity extends AppCompatActivity {
                 numberInput.setText("");
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
-
                 inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
@@ -131,19 +143,24 @@ public class InGameActivity extends AppCompatActivity {
         gasButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double addNum;
+                double gasPrice;
+                double moreMoney;
                 if (!numberInput.getText().toString().isEmpty()) {
-                    addNum = Double.parseDouble(numberInput.getText().toString());
+                    gasPrice = Double.parseDouble(numberInput.getText().toString());
+                    moreMoney = gasPrice * player.milk * (1 + (0.01 * player.hayBales) + (0.03 * player.semis));
+                    player.hayBales = 0;
+                    player.milk = 0;
+                    hayBaleCount.setText("Hay Bales: 0");
                 } else {
-                    addNum = 0.0;
+                    gasPrice = 0.0;
+                    moreMoney = gasPrice;
                 }
-                double moreMoney = addNum * player.milk;
                 player.money += moreMoney;
                 moneyCount.setText("Money: $" + player.money);
+                milkCount.setText("Milk: 0 gallons");
                 numberInput.setText("");
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
-
                 inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
@@ -220,8 +237,6 @@ public class InGameActivity extends AppCompatActivity {
                 horseCount.setText("Horses: 0");
             }
         });
-
-        gameTimer.start();
     }
 
     // Private Class for keeping track of player data

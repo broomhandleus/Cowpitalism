@@ -1,6 +1,7 @@
 package com.broomhandleus.maximus.cowpitalism;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -35,14 +38,16 @@ public class BluetoothActivity extends AppCompatActivity {
         serverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+                AcceptThread acceptThread = new AcceptThread();
+                acceptThread.start();
             }
         });
 
         clientButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                //ConnectThread connectThread = new ConnectThread();
+                //connectThread.start();
             }
         });
 
@@ -56,6 +61,17 @@ public class BluetoothActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                String deviceName = device.getName();
+                String deviceHardwareAddress = device.getAddress(); // MAC address
+
+                Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
+            }
+        }
 
     }
     private class AcceptThread extends Thread {
@@ -92,6 +108,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     try {
                         socket.getOutputStream().write(5);
                         mmServerSocket.close();
+                        Log.d(TAG, "Wrote 5 to outputstream");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -106,6 +123,75 @@ public class BluetoothActivity extends AppCompatActivity {
                 mmServerSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
+            }
+        }
+    }
+
+    byte[] toByteArray(int value) {
+        return  ByteBuffer.allocate(4).putInt(value).array();
+    }
+
+    int fromByteArray(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
+    }
+
+
+    private class ConnectThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final BluetoothDevice mmDevice;
+
+        public ConnectThread(BluetoothDevice device) {
+            // Use a temporary object that is later assigned to mmSocket
+            // because mmSocket is final.
+            BluetoothSocket tmp = null;
+            mmDevice = device;
+
+            try {
+                // Get a BluetoothSocket to connect with the given BluetoothDevice.
+                // MY_UUID is the app's UUID string, also used in the server code.
+                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(NAME));
+            } catch (IOException e) {
+                Log.e(TAG, "Socket's create() method failed", e);
+            }
+            mmSocket = tmp;
+        }
+
+        public void run() {
+            // Cancel discovery because it otherwise slows down the connection.
+            mBluetoothAdapter.cancelDiscovery();
+
+            try {
+                // Connect to the remote device through the socket. This call blocks
+                // until it succeeds or throws an exception.
+                mmSocket.connect();
+            } catch (IOException connectException) {
+                // Unable to connect; close the socket and return.
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) {
+                    Log.e(TAG, "Could not close the client socket", closeException);
+                }
+                return;
+            }
+
+            // The connection attempt succeeded. Perform work associated with
+            // the connection in a separate thread.
+//            manageMyConnectedSocket(mmSocket);
+            byte[] bytes = new byte[4];
+            try {
+                mmSocket.getInputStream().read(bytes);
+                int num = fromByteArray(bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Closes the client socket and causes the thread to finish.
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the client socket", e);
             }
         }
     }

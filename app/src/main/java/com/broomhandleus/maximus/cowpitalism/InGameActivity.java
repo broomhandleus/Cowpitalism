@@ -7,6 +7,7 @@ import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -17,6 +18,9 @@ import android.widget.TextView;
 
 public class InGameActivity extends AppCompatActivity {
 
+    public static final String TAG = "InGameActivity";
+    String name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +30,7 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
-        String name;
+
         final AlertDialog nameInput = new AlertDialog.Builder(this).create();
         final EditText input = new EditText(this);
         nameInput.setTitle("Player Creation");
@@ -36,6 +40,7 @@ public class InGameActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         name = input.getText().toString();
+                        Log.d(TAG, name);
                         nameInput.hide();
                     }
                 });

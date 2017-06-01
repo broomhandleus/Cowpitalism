@@ -118,7 +118,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     // the connection in a separate thread.
 //                    manageMyConnectedSocket(socket);
                     try {
-                        socket.getOutputStream().write(5);
+                        socket.getOutputStream().write(toByteArray(5));
                         mmServerSocket.close();
                         Log.d(TAG, "Wrote 5 to outputstream");
                     } catch (IOException e) {
@@ -194,7 +194,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 mmSocket.getInputStream().read(bytes);
                 int num = fromByteArray(bytes);
                 Log.d(TAG, "num: " + num);
-                messageBox.setText("Num: " + num);
             } catch (IOException e) {
                 e.printStackTrace();
             }

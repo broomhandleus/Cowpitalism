@@ -1,7 +1,9 @@
 package com.broomhandleus.maximus.cowpitalism;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +20,8 @@ public class BluetoothActivity extends AppCompatActivity {
     Button clientButton;
     public static final String NAME = "Cowpitalism";
     public static final String TAG = "BluetoothActivity";
+    private static final int REQUEST_ENABLE_BT = 1;
+    BluetoothAdapter mBluetoothAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +35,7 @@ public class BluetoothActivity extends AppCompatActivity {
         serverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                
             }
         });
 
@@ -41,6 +45,18 @@ public class BluetoothActivity extends AppCompatActivity {
 
             }
         });
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Bluetooth non-existant!");
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+
     }
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
@@ -72,8 +88,13 @@ public class BluetoothActivity extends AppCompatActivity {
                 if (socket != null) {
                     // A connection was accepted. Perform work associated with
                     // the connection in a separate thread.
-                    manageMyConnectedSocket(socket);
-                    mmServerSocket.close();
+//                    manageMyConnectedSocket(socket);
+                    try {
+                        socket.getOutputStream().write(5);
+                        mmServerSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
             }

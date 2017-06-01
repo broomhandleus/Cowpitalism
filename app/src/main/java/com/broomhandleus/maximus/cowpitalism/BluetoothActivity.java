@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,8 +26,11 @@ public class BluetoothActivity extends AppCompatActivity {
     Button clientButton;
     public static final String NAME = "Cowpitalism";
     public static final String TAG = "BluetoothActivity";
+    public static final String MY_UUID = "c12380c7-0d88-4250-83d1-fc835d3833d9";
     private static final int REQUEST_ENABLE_BT = 1;
     BluetoothAdapter mBluetoothAdapter;
+    BluetoothDevice maxsPhone;
+    TextView messageBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +39,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
         serverButton = (Button) findViewById(R.id.serverButton);
         clientButton = (Button) findViewById(R.id.clientButton);
+        messageBox = (TextView) findViewById(R.id.messageBox);
 
 
         serverButton.setOnClickListener(new View.OnClickListener() {
@@ -46,8 +53,8 @@ public class BluetoothActivity extends AppCompatActivity {
         clientButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //ConnectThread connectThread = new ConnectThread();
-                //connectThread.start();
+                ConnectThread connectThread = new ConnectThread(maxsPhone);
+                connectThread.start();
             }
         });
 
@@ -63,11 +70,16 @@ public class BluetoothActivity extends AppCompatActivity {
 
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
+        Log.d(TAG, "Looking at devices");
         if (pairedDevices.size() > 0) {
             // There are paired devices. Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
+                if (device.getAddress().equals("E4:FA:ED:34:63:9A")) {
+                    Log.d(TAG, "GOT IT!!!");
+                    maxsPhone = device;
+                }
 
                 Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
             }
@@ -83,7 +95,7 @@ public class BluetoothActivity extends AppCompatActivity {
             BluetoothServerSocket tmp = null;
             try {
                 // MY_UUID is the app's UUID string, also used by the client code.
-                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, UUID.fromString(NAME));
+                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, UUID.fromString(MY_UUID));
             } catch (IOException e) {
                 Log.e(TAG, "Socket's listen() method failed", e);
             }
@@ -149,7 +161,7 @@ public class BluetoothActivity extends AppCompatActivity {
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
-                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(NAME));
+                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(MY_UUID));
             } catch (IOException e) {
                 Log.e(TAG, "Socket's create() method failed", e);
             }
@@ -181,6 +193,8 @@ public class BluetoothActivity extends AppCompatActivity {
             try {
                 mmSocket.getInputStream().read(bytes);
                 int num = fromByteArray(bytes);
+                Log.d(TAG, "num: " + num);
+                messageBox.setText("Num: " + num);
             } catch (IOException e) {
                 e.printStackTrace();
             }

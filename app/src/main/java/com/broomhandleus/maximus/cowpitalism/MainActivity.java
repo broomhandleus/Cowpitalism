@@ -9,9 +9,9 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button startButton;
-    Button rulesButton;
-    Button joinButton;
+    private Button startButton;
+    private Button rulesButton;
+    private Button joinButton;
     public static final String TAG = "MainActivity";
 
     @Override

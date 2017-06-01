@@ -60,7 +60,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Bluetooth non-existant!");
+            Log.e(TAG, "Bluetooth non-existent!");
         }
 
         if (!mBluetoothAdapter.isEnabled()) {
@@ -76,7 +76,7 @@ public class BluetoothActivity extends AppCompatActivity {
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
-                if (device.getAddress().equals("E4:FA:ED:34:63:9A")) {
+                if (device.getAddress().equals("F8:CF:C5:DE:1B:72")) {
                     Log.d(TAG, "GOT IT!!!");
                     maxsPhone = device;
                 }
@@ -84,8 +84,8 @@ public class BluetoothActivity extends AppCompatActivity {
                 Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
             }
         }
-
     }
+
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
@@ -118,9 +118,9 @@ public class BluetoothActivity extends AppCompatActivity {
                     // the connection in a separate thread.
 //                    manageMyConnectedSocket(socket);
                     try {
-                        socket.getOutputStream().write(toByteArray(5));
+                        socket.getOutputStream().write(toByteArray(42));
                         mmServerSocket.close();
-                        Log.d(TAG, "Wrote 5 to outputstream");
+                        Log.d(TAG, "Wrote 42 to outputstream");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

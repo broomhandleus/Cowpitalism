@@ -11,6 +11,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button startButton;
     Button rulesButton;
+    Button joinButton;
     public static final String TAG = "MainActivity";
 
     @Override
@@ -24,6 +25,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent screenSwitch = new Intent(getApplication(), InGameActivity.class);
                 startActivity(screenSwitch);
+            }
+        });
+
+        joinButton = (Button) findViewById(R.id.joinButton);
+        joinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Join Game Clicked.");
             }
         });
 

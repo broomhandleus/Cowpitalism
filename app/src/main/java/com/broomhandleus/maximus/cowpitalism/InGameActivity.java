@@ -18,7 +18,25 @@ import android.widget.TextView;
 public class InGameActivity extends AppCompatActivity {
 
     public static final String TAG = "InGameActivity";
-    Player player;
+    public Player player;
+    private int inputVar;
+    private double gasPrice;
+    private double moreMoney;
+
+    // Declarations
+    private TextView playerName;
+    private TextView cowCount;
+    private TextView milkCount;
+    private TextView moneyCount;
+    private TextView horseCount;
+    private TextView barnCount;
+    private TextView tankerCount;
+    private TextView semiCount;
+    private TextView hayBaleCount;
+
+    private Chronometer gameTimer;
+
+    private EditText numberInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +47,24 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
-
-        final TextView playerName = (TextView) findViewById(R.id.titleName);
-        final AlertDialog nameInput = new AlertDialog.Builder(this).create();
-        final TextView milkCount = (TextView) findViewById(R.id.milkCount);
+        // TextView Instantiations
+        playerName = (TextView) findViewById(R.id.titleName);
+        cowCount = (TextView) findViewById(R.id.cowCount);
+        milkCount = (TextView) findViewById(R.id.milkCount);
+        moneyCount = (TextView) findViewById(R.id.moneyCount);
+        horseCount = (TextView) findViewById(R.id.horseCount);
+        barnCount = (TextView) findViewById(R.id.barnCount);
+        tankerCount = (TextView) findViewById(R.id.tankerCount);
+        semiCount = (TextView) findViewById(R.id.semiCount);
+        hayBaleCount = (TextView) findViewById(R.id.hayBaleCount);
 
         // Game Timer
-        final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);
+        gameTimer = (Chronometer) findViewById(R.id.chronometer);
 
+        // Number Input
+        numberInput = (EditText) findViewById(R.id.numberInput);
+
+        final AlertDialog nameInput = new AlertDialog.Builder(this).create();
         final EditText input = new EditText(this);
         nameInput.setTitle("Player Creation");
         nameInput.setMessage("Please Choose a Nickname:");
@@ -66,17 +94,6 @@ public class InGameActivity extends AppCompatActivity {
                 });
         nameInput.show();
 
-        // References to all TextViews
-        final TextView cowCount = (TextView) findViewById(R.id.cowCount);
-        final TextView moneyCount = (TextView) findViewById(R.id.moneyCount);
-        final TextView horseCount = (TextView) findViewById(R.id.horseCount);
-        final TextView barnCount = (TextView) findViewById(R.id.barnCount);
-        final TextView tankerCount = (TextView) findViewById(R.id.tankerCount);
-        final TextView semiCount = (TextView) findViewById(R.id.semiCount);
-        final TextView hayBaleCount = (TextView) findViewById(R.id.hayBaleCount);
-
-        //Reference to EditText
-        final EditText numberInput = (EditText) findViewById(R.id.numberInput);
 
         // References to all Buttons/Switches
         Button cowButton = (Button) findViewById(R.id.cowButton);
@@ -143,21 +160,35 @@ public class InGameActivity extends AppCompatActivity {
         gasButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double gasPrice;
-                double moreMoney;
                 if (!numberInput.getText().toString().isEmpty()) {
                     gasPrice = Double.parseDouble(numberInput.getText().toString());
-                    moreMoney = gasPrice * player.milk * (1 + (0.01 * player.hayBales) + (0.03 * player.semis));
-                    player.hayBales = 0;
-                    player.milk = 0;
-                    hayBaleCount.setText("Hay Bales: 0");
+                    final AlertDialog hayBaleInput = new AlertDialog.Builder(InGameActivity.this).create();
+                    final EditText input = new EditText(InGameActivity.this);
+                    hayBaleInput.setTitle("User input required");
+                    hayBaleInput.setMessage("How many hay bales do you want to use?");
+                    hayBaleInput.setView(input);
+                    hayBaleInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Done",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    inputVar = Integer.parseInt(input.getText().toString());
+                                    if (!(inputVar >= 0 && inputVar <= player.hayBales)) {
+                                        inputVar = 0;
+                                    }
+                                    moreMoney = gasPrice * player.milk * (1 + (0.01 * inputVar) + (0.03 * player.semis));
+                                    player.hayBales -= inputVar;
+                                    player.milk = 0;
+                                    hayBaleCount.setText("Hay Bales: " + player.hayBales);
+                                    player.money += moreMoney;
+                                    moneyCount.setText("Money: $" + player.money);
+                                    milkCount.setText("Milk: 0 gallons");
+                                    hayBaleInput.dismiss();
+                                }
+                            });
+                    hayBaleInput.show();
                 } else {
                     gasPrice = 0.0;
                     moreMoney = gasPrice;
                 }
-                player.money += moreMoney;
-                moneyCount.setText("Money: $" + player.money);
-                milkCount.setText("Milk: 0 gallons");
                 numberInput.setText("");
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -231,10 +262,52 @@ public class InGameActivity extends AppCompatActivity {
         waterTowerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                player.cows = player.cows + (10 * player.horses);
-                player.horses = 0;
-                cowCount.setText("Cows: " + player.cows);
-                horseCount.setText("Horses: 0");
+                final AlertDialog hayBaleInput = new AlertDialog.Builder(InGameActivity.this).create();
+                final EditText input = new EditText(InGameActivity.this);
+                hayBaleInput.setTitle("User input required");
+                hayBaleInput.setMessage("How many horses do you want to convert?");
+                hayBaleInput.setView(input);
+                hayBaleInput.setButton(DialogInterface.BUTTON_NEUTRAL, "Trade 'em!",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                inputVar = Integer.parseInt(input.getText().toString());
+                                if (!(inputVar >= 0 && inputVar <= player.horses)) {
+                                    inputVar = 0;
+                                }
+                                player.cows = player.cows + (10 * inputVar);
+                                player.horses -= inputVar;
+                                cowCount.setText("Cows: " + player.cows);
+                                horseCount.setText("Horses: " + player.horses);
+                            }
+                        });
+                hayBaleInput.show();
+            }
+        });
+
+        Button purchaseCowButton = (Button) findViewById(R.id.purchaseCowButton);
+        purchaseCowButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.money >= 500.0) {
+                    player.cows++;
+                    player.money -= 500.0;
+                    cowCount.setText("Cows: " + player.cows);
+                    moneyCount.setText("Money: $" + player.money);
+                }
+            }
+        });
+
+        Button purchaseHorseButton = (Button) findViewById(R.id.purchaseHorseButton);
+        purchaseHorseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.money >= 4500.0) {
+                    player.horses++;
+                    player.money -= 4500.0;
+                    horseCount.setText("Horses: " + player.horses);
+                    moneyCount.setText("Money: $" + player.money);
+                }
             }
         });
     }
@@ -264,7 +337,7 @@ public class InGameActivity extends AppCompatActivity {
             tankers = 0;
             barns = 0;
 
-            // everyone should have a kittie... or 5
+            // everyone should have a kitty... or 5
             kitties = (int) (5 * Math.random());
         }
     }

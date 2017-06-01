@@ -40,7 +40,7 @@ public class InGameActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         player = new Player(input.getText().toString());
-                        playerName.setText(player.name);
+                        playerName.setText(player.name.toUpperCase());
                         Log.d(TAG, input.getText().toString());
                         nameInput.dismiss();
                     }

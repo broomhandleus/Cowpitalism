@@ -3,7 +3,6 @@ package com.broomhandleus.maximus.cowpitalism;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,7 +18,7 @@ import android.widget.TextView;
 public class InGameActivity extends AppCompatActivity {
 
     public static final String TAG = "InGameActivity";
-    String name;
+    Player player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +30,7 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Cowpitalism");
 
 
+        final TextView playerName = (TextView) findViewById(R.id.titleName);
         final AlertDialog nameInput = new AlertDialog.Builder(this).create();
         final EditText input = new EditText(this);
         nameInput.setTitle("Player Creation");
@@ -39,20 +39,18 @@ public class InGameActivity extends AppCompatActivity {
         nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        name = input.getText().toString();
-                        Log.d(TAG, name);
-                        nameInput.hide();
+                        player = new Player(input.getText().toString());
+                        playerName.setText(player.name);
+                        Log.d(TAG, input.getText().toString());
+                        nameInput.dismiss();
                     }
                 });
         nameInput.show();
-
-        final Player player = new Player(name);
 
         // Game Timer
         final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);
 
         // References to all TextViews
-        TextView playerName = (TextView) findViewById(R.id.titleName);
         final TextView cowCount = (TextView) findViewById(R.id.cowCount);
         final TextView milkCount = (TextView) findViewById(R.id.milkCount);
         final TextView moneyCount = (TextView) findViewById(R.id.moneyCount);
@@ -223,7 +221,6 @@ public class InGameActivity extends AppCompatActivity {
             }
         });
 
-        playerName.setText(player.name);
         gameTimer.start();
     }
 

@@ -1,7 +1,10 @@
 package com.broomhandleus.maximus.cowpitalism;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -23,7 +26,22 @@ public class InGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
-        final Player player = new Player("Beta_Tester");
+        String name;
+        final AlertDialog nameInput = new AlertDialog.Builder(this).create();
+        final EditText input = new EditText(this);
+        nameInput.setTitle("Player Creation");
+        nameInput.setMessage("Please Choose a Nickname");
+        nameInput.setView(input);
+        nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        name = input.getText().toString();
+                        nameInput.hide();
+                    }
+                });
+        nameInput.show();
+
+        final Player player = new Player(name);
 
         // Game Timer
         final Chronometer gameTimer = (Chronometer) findViewById(R.id.chronometer);

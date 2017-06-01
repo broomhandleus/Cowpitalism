@@ -72,7 +72,7 @@ public class InGameActivity extends AppCompatActivity {
                 if (!numberInput.getText().toString().isEmpty()) {
                     addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0;
+                    addNum = 1;
                 }
                 player.cows = player.cows + addNum;
                 cowCount.setText("Cows: " + player.cows);
@@ -93,7 +93,7 @@ public class InGameActivity extends AppCompatActivity {
                 if (!numberInput.getText().toString().isEmpty()) {
                     addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0;
+                    addNum = 1;
                 }
                 player.horses = player.horses + addNum;
                 horseCount.setText("Horses: " + player.horses);
@@ -114,7 +114,7 @@ public class InGameActivity extends AppCompatActivity {
                 if (!numberInput.getText().toString().isEmpty()) {
                     addNum = Integer.parseInt(numberInput.getText().toString());
                 } else {
-                    addNum = 0;
+                    addNum = 1;
                 }
                 player.hayBales = player.hayBales + addNum;
                 hayBaleCount.setText("Hay Bales: " + player.hayBales);

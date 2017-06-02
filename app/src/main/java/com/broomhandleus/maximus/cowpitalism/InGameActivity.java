@@ -49,6 +49,33 @@ public class InGameActivity extends AppCompatActivity {
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
+        playerName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog nameInput = new AlertDialog.Builder(InGameActivity.this).create();
+                final EditText input = new EditText(InGameActivity.this);
+                nameInput.setTitle("Change Player Name");
+                nameInput.setMessage("Please Choose a Nickname:");
+                nameInput.setView(input);
+                nameInput.setButton(DialogInterface.BUTTON_POSITIVE, "Change",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                player.name = input.getText().toString();
+                                playerName.setText(player.name.toUpperCase());
+                                nameInput.dismiss();
+                            }
+                        });
+                nameInput.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                nameInput.dismiss();
+                            }
+                        });
+                nameInput.show();
+            }
+        });
         cowCount = (TextView) findViewById(R.id.cowCount);
         milkCount = (TextView) findViewById(R.id.milkCount);
         moneyCount = (TextView) findViewById(R.id.moneyCount);

@@ -154,31 +154,24 @@ public class BluetoothActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Checks to see whether we got permission from the user to use location services.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                    Log.d(TAG, "PERMISSION GRANTED BY USER!!!");
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    Log.e(TAG, "PERMISSIONS DENIED BY USER!!!");
-                    System.exit(-1);
-                }
-                return;
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "PERMISSION GRANTED BY USER!!!");
+            } else {
+                Log.e(TAG, "PERMISSIONS DENIED BY USER!!!");
+                System.exit(-1);
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -189,6 +182,10 @@ public class BluetoothActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * BroadcastReceiver that sets our "discoverable" variable correctly every time the phone's
+     * discoverable state changes. This will be used by the game host.
+     */
     private BroadcastReceiver discoverableReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -206,6 +203,9 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * BroadcastReceiver that handles searching for nearby game hosts and adds them to the list.
+     */
     private BroadcastReceiver discoverDevicesReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -236,6 +236,12 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * AcceptThread is run on the game host.
+     * It will receive all incoming messages from other devices
+     * at first they will be messages to join the game,
+     * then gameplay messages.
+     */
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
@@ -259,7 +265,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 try {
                     Log.d(TAG, "Now discoverable for the next 60 seconds!");
                     Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 10);
+                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 60);
                     startActivity(discoverableIntent);
                     Log.d(TAG, "Now accepting join requests in the background!");
                     socket = mmServerSocket.accept();
@@ -280,7 +286,7 @@ public class BluetoothActivity extends AppCompatActivity {
                                 && joinMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE
                                 && discoverable) {
                             BluetoothDevice device = socket.getRemoteDevice();
-                            Log.d(TAG, "Adding Device: " + device.getName() + "to the game!");
+                            Log.d(TAG, "Adding Device: " + device.getName() + " to the game!");
                             playerDevices.add(device);
                             socket.close();
                             socket = null;
@@ -307,29 +313,24 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
-    byte[] toByteArray(int value) {
-        return  ByteBuffer.allocate(4).putInt(value).array();
-    }
-
-    int fromByteArray(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getInt();
-    }
-
-
+    /**
+     * ConnectThread allows a device to connect to the specified game host in the background
+     * and request to join the game.
+     */
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
-        public ConnectThread(BluetoothDevice device) {
+        public ConnectThread(BluetoothDevice hostDevice) {
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
-            mmDevice = device;
+            mmDevice = hostDevice;
 
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
-                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+                tmp = hostDevice.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
                 Log.e(TAG, "Socket's create() method failed", e);
             }

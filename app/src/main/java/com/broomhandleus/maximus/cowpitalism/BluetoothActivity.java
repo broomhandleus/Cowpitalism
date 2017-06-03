@@ -296,7 +296,7 @@ public class BluetoothActivity extends AppCompatActivity {
                             // if we are in gameplay mode
                             if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST) {
                                 BluetoothDevice device = socket.getRemoteDevice();
-                                Log.d(TAG, "Denying device trying to join in middle of game: " + device.getName() +"!";
+                                Log.d(TAG, "Denying device trying to join in middle of game: " + device.getName() +"!");
                                 socket.close();
                                 socket = null;
                             } else {

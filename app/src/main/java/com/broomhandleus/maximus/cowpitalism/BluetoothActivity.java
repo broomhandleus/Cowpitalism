@@ -1,9 +1,9 @@
 package com.broomhandleus.maximus.cowpitalism;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
@@ -11,18 +11,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.ParcelUuid;
-import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,10 +33,8 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -57,6 +58,10 @@ public class BluetoothActivity extends AppCompatActivity {
     private List<BluetoothDevice> discoveredDevices;
     private List<BluetoothDevice> confirmedPeers;
     private List<BluetoothDevice> playerDevices;
+
+    ArrayList<BluetoothDevice> potentialHosts;
+    CustomArrayAdapter hostsAdapter;
+
 
 
     @Override
@@ -83,62 +88,57 @@ public class BluetoothActivity extends AppCompatActivity {
         joinGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
-                builder.setView(R.).setTitle(R.string.dialog_title);
-                AlertDialog dialog = builder.Create ();
+
+                // Create ArrayList to contain the devices found (potential game hosts)
+                potentialHosts = new ArrayList<>();
+                hostsAdapter = new CustomArrayAdapter(getApplicationContext(), potentialHosts);
+
+                // Create Dialog that displays the constantly-updating list of devices found
+                AlertDialog.Builder builder = new AlertDialog.Builder(BluetoothActivity.this);
+                builder.setTitle("Select Game Host");
+                ListView listView = new ListView(BluetoothActivity.this);
+                listView.setAdapter(hostsAdapter);
+                builder.setView(listView);
+                final Dialog dialog = builder.create();
+                dialog.show();
+
+                // Setup what happens when we select our game host from the list
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        BluetoothDevice gameHost = potentialHosts.get(position);
+                        Log.d(TAG, "Game host will be: " + gameHost);
+                        dialog.dismiss();
+
+                        ConnectThread connectThread = new ConnectThread(gameHost);
+                        connectThread.start();
+                    }
+                });
+
+                // Make it so that we are notified when a new nearby BluetoothDevice is discovered
+                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+                registerReceiver(discoverDevicesReceiver, filter);
+
+                // Request permission to search for nearby devices
+                Log.d(TAG, "Attempting to discover nearby devices....");
+                ActivityCompat.requestPermissions(BluetoothActivity.this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+                // Begin searching for nearby devices
+                boolean success = mBluetoothAdapter.startDiscovery();
+                if (success)
+                    Log.d(TAG, "Started DISCOVERING!!!");
+                else
+                    Log.e(TAG, "Failed to start Discovering!!!");
+
             }
         });
 
-//        serverButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                AcceptThread acceptThread = new AcceptThread();
-//                acceptThread.start();
-//            }
-//        });
-//
-//        clientButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                ConnectThread connectThread = new ConnectThread(maxsPhone);
-//                connectThread.start();
-//            }
-//        });
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         registerReceiver(discoverableReceiver, filter);
-        filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(deviceFoundReceiver, filter);
-        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(finishedDiscoveringReceiver, filter);
 
-//        discoverableButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d(TAG, "Attempting to make discoverable for ten seconds....");
-//                AcceptThread acceptThread = new AcceptThread();
-//                acceptThread.start();
-//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 10);
-//                startActivity(discoverableIntent);
-//            }
-//        });
-
-//        discoveryButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d(TAG, "Attempting to discover nearby devices....");
-//                discoveryCounter = 0;
-//                ActivityCompat.requestPermissions(BluetoothActivity.this,
-//                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-//                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-//                boolean success = mBluetoothAdapter.startDiscovery();
-//                if (success)
-//                    Log.d(TAG, "Started DISCOVERING!!!");
-//                else
-//                    Log.e(TAG, "Failed to start Discovering!!!");
-//            }
-//        });
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -150,22 +150,6 @@ public class BluetoothActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-//        Log.d(TAG, "Looking at devices");
-//        if (pairedDevices.size() > 0) {
-//            // There are paired devices. Get the name and address of each paired device.
-//            for (BluetoothDevice device : pairedDevices) {
-//                String deviceName = device.getName();
-//                String deviceHardwareAddress = device.getAddress(); // MAC address
-//                if (device.getAddress().equals("F8:CF:C5:DE:1B:72")) {
-//                    Log.d(TAG, "GOT IT!!!");
-//                    maxsPhone = device;
-//                }
-//
-//                Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
-//            }
-//        }
     }
 
     @Override
@@ -199,11 +183,7 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // Unregister the ACTION_FOUND receiver
         unregisterReceiver(discoverableReceiver);
-        unregisterReceiver(deviceFoundReceiver);
-        unregisterReceiver(finishedDiscoveringReceiver);
     }
 
 
@@ -224,52 +204,32 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     };
 
-    private BroadcastReceiver deviceFoundReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver discoverDevicesReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if(action.equals(BluetoothDevice.ACTION_FOUND)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device.getUuids() != null) {
-                    Log.d(TAG, "Device Found: " + device.getName() + ": " + device.getAddress() + ", with " + device.getUuids()[0]);
-                } else {
-                    Log.d(TAG, "Device Found: " + device.getName() + ": " + device.getAddress() + ", with no UUIDS!!!");
+                Log.d(TAG, "Device Found: " + device.getName() + ": " + device.getAddress());
+                if (!potentialHosts.contains(device)) {
+                    potentialHosts.add(device);
+                    hostsAdapter.notifyDataSetChanged();
                 }
-                if (!discoveredDevices.contains(device)) {
-                    discoveredDevices.add(device);
-                }
-            }
-        }
-    };
-    private BroadcastReceiver finishedDiscoveringReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if(action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
-//                Log.d(TAG, "Finished Discovering: " + discoveryCounter);
-                if (discoveryCounter++ < 0) {
-                    mBluetoothAdapter.startDiscovery();
-                } else {
-                    if (discoveredDevices.size() != 0) {
-                        Log.d(TAG, "Found devices:");
-                        Log.d(TAG, "--------------");
-                        serverCheckCounter = 0;
-                        for (int i = 0; i < discoveredDevices.size(); i++) {
-                            Log.d(TAG, "Device-" + (i + 1) + ": " + discoveredDevices.get(i).getName() + " -> " + discoveredDevices.get(i).getAddress());
-                        }
-                        Log.d(TAG, "--------------");
-
-
-                        Log.d(TAG, "Spot0: " + serverCheckCounter + " " + discoveredDevices.get(serverCheckCounter).getName() + ", " + discoveredDevices.get(serverCheckCounter));
-                        BluetoothDevice device = discoveredDevices.get(serverCheckCounter++);
-                        if (!device.fetchUuidsWithSdp()) {
-                            Log.e(TAG, "Failed to fetch uuids for: " + device.getName() + ": " + device.getAddress());
-                        }
-                    } else {
-                        Log.e(TAG, "No devices found!!!");
+            } else if(action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+                Log.d(TAG, "Finished Discovering");
+                if (potentialHosts.size() != 0) {
+                    Log.d(TAG, "Potential Hosts:");
+                    Log.d(TAG, "--------------");
+                    for (int i = 0; i < potentialHosts.size(); i++) {
+                        Log.d(TAG, "Device-" + (i + 1) + ": " + potentialHosts.get(i).getName() + " -> " + potentialHosts.get(i).getAddress());
                     }
-
+                    Log.d(TAG, "--------------");
+                } else {
+                    Log.e(TAG, "No potential hosts found!!!");
                 }
+                unregisterReceiver(discoverDevicesReceiver);
+            } else {
+                Log.e(TAG, "Unknown type of action received!");
             }
         }
     };
@@ -439,6 +399,26 @@ public class BluetoothActivity extends AppCompatActivity {
             this.type = type;
             this.value = value;
             this.body = body;
+        }
+    }
+    public class CustomArrayAdapter extends ArrayAdapter<BluetoothDevice> {
+        public CustomArrayAdapter(Context context, ArrayList<BluetoothDevice> devices) {
+            super(context, 0, devices);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            BluetoothDevice device = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
+            }
+            TextView textView = (TextView) convertView.findViewById(android.R.id.text1);
+            if (device.getName() == null) {
+                textView.setText(device.getAddress());
+            } else {
+                textView.setText(device.getName() + ": " + device.getAddress());
+            }
+            return convertView;
         }
     }
 }

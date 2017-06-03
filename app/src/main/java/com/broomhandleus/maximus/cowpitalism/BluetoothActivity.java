@@ -30,6 +30,8 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -282,6 +284,8 @@ public class BluetoothActivity extends AppCompatActivity {
                             playerDevices.add(device);
                             socket.close();
                             socket = null;
+                        } else {
+                            Log.e(TAG, "NOT a join message!");
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -351,16 +355,22 @@ public class BluetoothActivity extends AppCompatActivity {
             }
 
             // The connection attempt succeeded. Perform work associated with
-            // the connection in a separate thread.
-//            manageMyConnectedSocket(mmSocket);
-            byte[] bytes = new byte[4];
+            // Send the Game host a message requesting to join.
             try {
-                mmSocket.getInputStream().read(bytes);
-                int num = fromByteArray(bytes);
-                Log.d(TAG, "num: " + num);
-            } catch (IOException e) {
-                e.printStackTrace();
+                // Open up a channel to the game host
+                OutputStream rawOutputStream = mmSocket.getOutputStream();
+                ObjectOutputStream messageOutputStream = new ObjectOutputStream(rawOutputStream);
+
+                // Send a message asking to join the game
+                BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
+                messageOutputStream.writeObject(joinMessage);
+
+                // Close connection with the host
+                mmSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
+
         }
 
         // Closes the client socket and causes the thread to finish.

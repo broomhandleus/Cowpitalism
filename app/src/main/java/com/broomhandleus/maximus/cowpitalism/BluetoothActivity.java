@@ -275,24 +275,35 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
 
                 if (socket != null) {
-                    // A connection was accepted. Perform work associated with
-                    // the connection in a separate thread.
-//                    manageMyConnectedSocket(socket);
+                    // A connection was accepted
                     try {
                         InputStream rawInputStream = socket.getInputStream();
                         ObjectInputStream messageInputStream = new ObjectInputStream(rawInputStream);
                         BluetoothMessage joinMessage = (BluetoothMessage) messageInputStream.readObject();
-                        if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST
-                                && joinMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE
-                                && discoverable) {
-                            BluetoothDevice device = socket.getRemoteDevice();
-                            Log.d(TAG, "Adding Device: " + device.getName() + " to the game!");
-                            playerDevices.add(device);
-                            socket.close();
-                            socket = null;
+                        // If we are in discovery/join mode before the game, we only accept join messages
+                        if (discoverable) {
+                            if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST
+                                    && joinMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
+                                BluetoothDevice device = socket.getRemoteDevice();
+                                Log.d(TAG, "Adding Device: " + device.getName() + " to the game!");
+                                playerDevices.add(device);
+                                socket.close();
+                                socket = null;
+                            } else {
+                                Log.e(TAG, "NOT a join message!");
+                            }
                         } else {
-                            Log.e(TAG, "NOT a join message!");
+                            // if we are in gameplay mode
+                            if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST) {
+                                BluetoothDevice device = socket.getRemoteDevice();
+                                Log.d(TAG, "Denying device trying to join in middle of game: " + device.getName() +"!";
+                                socket.close();
+                                socket = null;
+                            } else {
+                                Log.d(TAG, "Some other kind of message has arrived!");
+                            }
                         }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (ClassNotFoundException e) {

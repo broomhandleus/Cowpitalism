@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,9 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,10 +39,9 @@ import java.util.UUID;
 
 public class BluetoothActivity extends AppCompatActivity {
 
-    Button serverButton;
-    Button clientButton;
-    Button discoverableButton;
-    Button discoveryButton;
+    Button hostGameButton;
+    Button joinGameButton;
+
     public static final String NAME = "Cowpitalism";
     public static final String TAG = "BluetoothActivity";
     public static final UUID MY_UUID = UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9");
@@ -53,6 +56,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private int serverCheckCounter;
     private List<BluetoothDevice> discoveredDevices;
     private List<BluetoothDevice> confirmedPeers;
+    private List<BluetoothDevice> playerDevices;
 
 
     @Override
@@ -60,18 +64,15 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
-        serverButton = (Button) findViewById(R.id.serverButton);
-        clientButton = (Button) findViewById(R.id.clientButton);
-        messageBox = (TextView) findViewById(R.id.messageBox);
-        discoverableButton = (Button) findViewById(R.id.discoverableButton);
-        discoveryButton = (Button) findViewById(R.id.discoveryButton);
+        hostGameButton = (Button) findViewById(R.id.hostGameButton);
+        joinGameButton = (Button) findViewById(R.id.joinGameButton);
+
 
         discoveredDevices = new ArrayList<>();
         confirmedPeers = new ArrayList<>();
+        playerDevices = new ArrayList<>();
 
-
-
-        serverButton.setOnClickListener(new View.OnClickListener() {
+        hostGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AcceptThread acceptThread = new AcceptThread();
@@ -79,13 +80,30 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         });
 
-        clientButton.setOnClickListener(new View.OnClickListener() {
+        joinGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ConnectThread connectThread = new ConnectThread(maxsPhone);
-                connectThread.start();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
+                builder.setView(R.).setTitle(R.string.dialog_title);
+                AlertDialog dialog = builder.Create ();
             }
         });
+
+//        serverButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                AcceptThread acceptThread = new AcceptThread();
+//                acceptThread.start();
+//            }
+//        });
+//
+//        clientButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                ConnectThread connectThread = new ConnectThread(maxsPhone);
+//                connectThread.start();
+//            }
+//        });
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         registerReceiver(discoverableReceiver, filter);
@@ -93,37 +111,34 @@ public class BluetoothActivity extends AppCompatActivity {
         registerReceiver(deviceFoundReceiver, filter);
         filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(finishedDiscoveringReceiver, filter);
-        filter = new IntentFilter(BluetoothDevice.ACTION_UUID);
-        registerReceiver(uuidReceiver, filter);
 
+//        discoverableButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d(TAG, "Attempting to make discoverable for ten seconds....");
+//                AcceptThread acceptThread = new AcceptThread();
+//                acceptThread.start();
+//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 10);
+//                startActivity(discoverableIntent);
+//            }
+//        });
 
-        discoverableButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Attempting to make discoverable for ten seconds....");
-                AcceptThread acceptThread = new AcceptThread();
-                acceptThread.start();
-                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 10);
-                startActivity(discoverableIntent);
-            }
-        });
-
-        discoveryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Attempting to discover nearby devices....");
-                discoveryCounter = 0;
-                ActivityCompat.requestPermissions(BluetoothActivity.this,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-                boolean success = mBluetoothAdapter.startDiscovery();
-                if (success)
-                    Log.d(TAG, "Started DISCOVERING!!!");
-                else
-                    Log.e(TAG, "Failed to start Discovering!!!");
-            }
-        });
+//        discoveryButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d(TAG, "Attempting to discover nearby devices....");
+//                discoveryCounter = 0;
+//                ActivityCompat.requestPermissions(BluetoothActivity.this,
+//                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+//                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+//                boolean success = mBluetoothAdapter.startDiscovery();
+//                if (success)
+//                    Log.d(TAG, "Started DISCOVERING!!!");
+//                else
+//                    Log.e(TAG, "Failed to start Discovering!!!");
+//            }
+//        });
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -135,22 +150,22 @@ public class BluetoothActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
-        Log.d(TAG, "Looking at devices");
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                if (device.getAddress().equals("F8:CF:C5:DE:1B:72")) {
-                    Log.d(TAG, "GOT IT!!!");
-                    maxsPhone = device;
-                }
-
-                Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
-            }
-        }
+//        Log.d(TAG, "Looking at devices");
+//        if (pairedDevices.size() > 0) {
+//            // There are paired devices. Get the name and address of each paired device.
+//            for (BluetoothDevice device : pairedDevices) {
+//                String deviceName = device.getName();
+//                String deviceHardwareAddress = device.getAddress(); // MAC address
+//                if (device.getAddress().equals("F8:CF:C5:DE:1B:72")) {
+//                    Log.d(TAG, "GOT IT!!!");
+//                    maxsPhone = device;
+//                }
+//
+//                Log.d(TAG, deviceName + ": " + deviceHardwareAddress);
+//            }
+//        }
     }
 
     @Override
@@ -189,42 +204,8 @@ public class BluetoothActivity extends AppCompatActivity {
         unregisterReceiver(discoverableReceiver);
         unregisterReceiver(deviceFoundReceiver);
         unregisterReceiver(finishedDiscoveringReceiver);
-        unregisterReceiver(uuidReceiver);
     }
 
-    private BroadcastReceiver uuidReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(BluetoothDevice.ACTION_UUID)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Parcelable[] uuidExtra = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
-                if (uuidExtra != null) {
-                    for (int i=0; i<uuidExtra.length; i++) {
-                        ParcelUuid currUUID = (ParcelUuid) uuidExtra[i];
-                        if (currUUID.getUuid().equals(MY_UUID)) {
-                            Log.d(TAG, device.getName() + "is a peer!");
-                            break;
-                        } else {
-                            Log.d(TAG, device.getName() + ", " + currUUID.getUuid() + " is no good!");
-                        }
-                    }
-                } else {
-                    Log.d(TAG, "UUID STILL NULL for " + device.getName());
-                }
-                if (serverCheckCounter < discoveredDevices.size()) {
-                    Log.d(TAG, "Spot: " + serverCheckCounter + " " + discoveredDevices.get(serverCheckCounter).getName() + ", " + discoveredDevices.get(serverCheckCounter));
-                    BluetoothDevice currDevice = discoveredDevices.get(serverCheckCounter++);
-                    if (!currDevice.fetchUuidsWithSdp()) {
-                        Log.e(TAG, "Failed to fetch uuids for: " + currDevice.getName() + ": " + currDevice.getAddress());
-                    } else {
-                        Log.d(TAG, "Waiting for:.." + currDevice.getName());
-                    }
-                }
-
-            }
-        }
-    };
 
     private BroadcastReceiver discoverableReceiver = new BroadcastReceiver() {
         @Override
@@ -314,6 +295,11 @@ public class BluetoothActivity extends AppCompatActivity {
             // Keep listening until exception occurs or a socket is returned.
             while (true) {
                 try {
+                    Log.d(TAG, "Now discoverable for the next 60 seconds!");
+                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 10);
+                    startActivity(discoverableIntent);
+                    Log.d(TAG, "Now accepting join requests in the background!");
                     socket = mmServerSocket.accept();
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
@@ -325,10 +311,21 @@ public class BluetoothActivity extends AppCompatActivity {
                     // the connection in a separate thread.
 //                    manageMyConnectedSocket(socket);
                     try {
-                        socket.getOutputStream().write(toByteArray(42));
-                        mmServerSocket.close();
-                        Log.d(TAG, "Wrote 42 to outputstream");
+                        InputStream rawInputStream = socket.getInputStream();
+                        ObjectInputStream messageInputStream = new ObjectInputStream(rawInputStream);
+                        BluetoothMessage joinMessage = (BluetoothMessage) messageInputStream.readObject();
+                        if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST
+                                && joinMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE
+                                && discoverable) {
+                            BluetoothDevice device = socket.getRemoteDevice();
+                            Log.d(TAG, "Adding Device: " + device.getName() + "to the game!");
+                            playerDevices.add(device);
+                            socket.close();
+                            socket = null;
+                        }
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                     break;
@@ -413,6 +410,35 @@ public class BluetoothActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the client socket", e);
             }
+        }
+    }
+
+    /**
+     * Class defining a single message sent over a bluetooth connection.
+     *
+     * type - The type of the message.
+     * value - A number being sent in the message.
+     * body - A string beng sent in the message.
+     *
+     * Upon connecting to the game-hosting device, the first thing a player
+     *  should do is send a message with type=Type.JOIN_REQUEST and value=JOIN_REQUEST_VALUE.
+     *  This will allow the game-host to verify that the player is in fact running Cowpitalism
+     *
+     */
+    private static class BluetoothMessage implements Serializable {
+        public static final int JOIN_REQUEST_VALUE = 12345;
+        private enum Type {
+            JOIN_REQUEST
+        }
+
+        public Type type;
+        public int value;
+        public String body;
+
+        public BluetoothMessage(Type type, int value, String body) {
+            this.type = type;
+            this.value = value;
+            this.body = body;
         }
     }
 }

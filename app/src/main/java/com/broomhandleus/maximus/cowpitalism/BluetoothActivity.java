@@ -15,7 +15,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,9 +32,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,6 +60,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
     ArrayList<BluetoothDevice> potentialHosts;
     CustomArrayAdapter hostsAdapter;
+    private BluetoothServerSocket serverSocket;
 
 
 
@@ -243,32 +241,28 @@ public class BluetoothActivity extends AppCompatActivity {
      * then gameplay messages.
      */
     private class AcceptThread extends Thread {
-        private final BluetoothServerSocket mmServerSocket;
 
         public AcceptThread() {
-            // Use a temporary object that is later assigned to mmServerSocket
-            // because mmServerSocket is final.
-            BluetoothServerSocket tmp = null;
             try {
                 // MY_UUID is the app's UUID string, also used by the client code.
-                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+                serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
                 Log.e(TAG, "Socket's listen() method failed", e);
             }
-            mmServerSocket = tmp;
         }
 
         public void run() {
+
+            Log.d(TAG, "Now discoverable for the next 45 seconds!");
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 45);
+            startActivity(discoverableIntent);
+
             BluetoothSocket socket = null;
-            // Keep listening until exception occurs or a socket is returned.
             while (true) {
                 try {
-                    Log.d(TAG, "Now discoverable for the next 60 seconds!");
-                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 60);
-                    startActivity(discoverableIntent);
                     Log.d(TAG, "Now accepting join requests in the background!");
-                    socket = mmServerSocket.accept();
+                    socket = serverSocket.accept();
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
                     break;
@@ -279,7 +273,10 @@ public class BluetoothActivity extends AppCompatActivity {
                     try {
                         InputStream rawInputStream = socket.getInputStream();
                         ObjectInputStream messageInputStream = new ObjectInputStream(rawInputStream);
+                        Log.d(TAG, "Attempting to read message!");
                         BluetoothMessage joinMessage = (BluetoothMessage) messageInputStream.readObject();
+                        Log.d(TAG, "Message READ!!!");
+
                         // If we are in discovery/join mode before the game, we only accept join messages
                         if (discoverable) {
                             if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST
@@ -304,12 +301,12 @@ public class BluetoothActivity extends AppCompatActivity {
                             }
                         }
 
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                    break;
                 }
             }
         }
@@ -317,7 +314,7 @@ public class BluetoothActivity extends AppCompatActivity {
         // Closes the connect socket and causes the thread to finish.
         public void cancel() {
             try {
-                mmServerSocket.close();
+                serverSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
@@ -410,7 +407,8 @@ public class BluetoothActivity extends AppCompatActivity {
     private static class BluetoothMessage implements Serializable {
         public static final int JOIN_REQUEST_VALUE = 12345;
         private enum Type {
-            JOIN_REQUEST
+            JOIN_REQUEST,
+            PING_CLIENT
         }
 
         public Type type;

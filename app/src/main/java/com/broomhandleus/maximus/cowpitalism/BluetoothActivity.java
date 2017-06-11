@@ -50,7 +50,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
     // Final Stuff
     public static final String SERVICE_NAME = "Cowpitalism";
-    public static final String TAG = "BluetoothActivity";
+    public static final String TAG = "Cowpitalism";
     public static final UUID[] MY_UUIDS = {
             UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
             UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
@@ -94,12 +94,14 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
+        // Initialize view elements
         hostGameButton = (Button) findViewById(R.id.hostGameButton);
         joinGameButton = (Button) findViewById(R.id.joinGameButton);
         approvePlayersButton = (Button) findViewById(R.id.approvePlayersButton);
         pingAllPlayersButton = (Button) findViewById(R.id.pingPlayersButton);
         handler = new Handler();
 
+        // Initialize lists
         // TODO: Maybe change later to initialize these upon starting a game
         playersList = new BluetoothDevice[MAX_DEVICES];
         executorsList = new ExecutorService[MAX_DEVICES];
@@ -107,8 +109,6 @@ public class BluetoothActivity extends AppCompatActivity {
             executorsList[i] = Executors.newSingleThreadExecutor();
         }
         hostAcceptThreads = new AcceptThread[MAX_DEVICES];
-
-
         potentialPlayers = new ArrayList<>();
 
         hostGameButton.setOnClickListener(new View.OnClickListener() {
@@ -465,6 +465,11 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     * A runnable that handles that receives a single msg, ACKs it, then acts upon the msg.
+     *
+     */
     private class ReceiveMessageRunnable implements Runnable {
         private int playerIdx;
         private BluetoothSocket socket;
@@ -494,15 +499,26 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 socket.close();
 
-                // Act accordingly depending on the type of message just received.
+                //
+                /**
+                 * Act accordingly depending on the type of message just received.
+                 * All the logic for different kinds of messages goes here.
+                 */
                 if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
                         && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
-                    Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
-                    if (!potentialPlayers.contains(socket.getRemoteDevice())) {
-                        potentialPlayers.add(socket.getRemoteDevice());
+                    if (discoverable) {
+                        Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
+                        if (!potentialPlayers.contains(socket.getRemoteDevice())) {
+                            potentialPlayers.add(socket.getRemoteDevice());
+                        }
+                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
+                    } else {
+                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
+
                     }
+
                 } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
-                    Log.v(TAG, "Received Join response! I am now player: " + inMessage.value);
+                    Log.d(TAG, "I have been accepted to join game!. I am player: " + inMessage.value);
                     // Cancel playerAcceptThread on the default channel (0) and start on correct one
                     playerAcceptThread.cancel();
                     playerAcceptThread = new AcceptThread(inMessage.value);
@@ -529,8 +545,7 @@ public class BluetoothActivity extends AppCompatActivity {
     }
 
     /**
-     * SendMessageRunnable allows a device to connect to the specified game host in the background
-     * and request to join the game.
+     * SendMessageRunnable sends, a message, and waits for an ACK.
      */
     private class SendMessageRunnable implements Runnable {
         private BluetoothDevice device;
@@ -640,6 +655,10 @@ public class BluetoothActivity extends AppCompatActivity {
             this.id = UUID.randomUUID();
         }
     }
+
+    /**
+     * Helps us to display BluetoothDevices in a ListView of some kind.
+     */
     public class CustomArrayAdapter extends ArrayAdapter<BluetoothDevice> {
         public CustomArrayAdapter(Context context, List<BluetoothDevice> devices) {
             super(context, 0, devices);
@@ -662,6 +681,11 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * A helper method that helps us print out the best name for a device.
+     * @param device the BluetoothDevice that is being referenced
+     * @return the device's Name if it has one, otherwise its mac address.
+     */
     private static String deviceName(BluetoothDevice device) {
         if (device.getName() == null) {
             return device.getAddress();

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -166,6 +167,7 @@ public class BluetoothActivity extends AppCompatActivity {
                          * the correct channelUUID rather than the default one(0).
                          */
                         playerAcceptThread = new AcceptThread(0);
+                        Log.d(TAG, "Starting default playerAcceptThread: " + playerAcceptThread);
                         playerAcceptThread.start();
 
                         BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
@@ -384,13 +386,16 @@ public class BluetoothActivity extends AppCompatActivity {
         public void run() {
 
             BluetoothSocket socket = null;
-            while (!canceled) {
+            while (true) {
                 try {
                     Log.d(TAG, "Now waiting to receive a message!");
                     socket = serverSocket.accept();
                     Log.d(TAG, "Exited accept!");
                 } catch (IOException e) {
-                    Log.e(TAG, "Socket's accept() method failed", e);
+                    if (!canceled) {
+                        Log.e(TAG, "Socket's accept() method failed: " + this);
+                        e.printStackTrace();
+                    }
                     break;
                 }
 
@@ -409,8 +414,8 @@ public class BluetoothActivity extends AppCompatActivity {
         public void cancel() {
             try {
                 Log.d(TAG, "Canceled accept thread on idx: " + playerIdx + "!");
-                serverSocket.close();
                 canceled = true;
+                serverSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
@@ -458,6 +463,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     // Cancel playerAcceptThread on the default channel (0) and start on correct one
                     playerAcceptThread.cancel();
                     playerAcceptThread = new AcceptThread(inMessage.value);
+                    Log.d(TAG, "Starting REAL playerAcceptThread: " + playerAcceptThread);
                     playerAcceptThread.start();
                 } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
@@ -520,13 +526,14 @@ public class BluetoothActivity extends AppCompatActivity {
                 // TODO: Has the potential to block forever if ack never arrives
                 BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
                 if (potentialAck.type == BluetoothMessage.Type.ACK
-                        && potentialAck.body.equals("ACK-" + message.value)) {
+                        && potentialAck.body.equals("ACK-" + message.id)) {
                     Log.d(TAG, "Received CORRECT ACK");
                     messageOutputStream.close();
                     messageInputStream.close();
                     socket.close();
                 } else {
                     Log.e(TAG, "Incorrect ACK!!!");
+                    Log.e(TAG, "Seeking: ACK-" + message.id + ", Found: " + potentialAck.body);
                     messageOutputStream.close();
                     messageInputStream.close();
                     socket.close();
@@ -602,6 +609,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
             }
             TextView textView = (TextView) convertView.findViewById(android.R.id.text1);
+            textView.setTextColor(Color.BLACK);
             if (device.getName() == null) {
                 textView.setText(device.getAddress());
             } else {

@@ -196,7 +196,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(BluetoothActivity.this,
                         new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-                // Begin searching for nearby devices
+                // Begin searching for nearby
                 boolean success = mBluetoothAdapter.startDiscovery();
                 if (success)
                     Log.d(TAG, "Started DISCOVERING!!!");

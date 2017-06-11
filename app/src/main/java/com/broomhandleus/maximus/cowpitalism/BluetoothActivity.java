@@ -66,7 +66,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
     // Bluetooth Stuff
     private BluetoothAdapter mBluetoothAdapter;
-    private boolean discoverable;
+    private volatile boolean discoverable;
 
     // Device-Related Lists
     private List<BluetoothDevice> potentialPlayers;
@@ -173,7 +173,7 @@ public class BluetoothActivity extends AppCompatActivity {
                          * the correct channelUUID rather than the default one(0).
                          */
                         playerAcceptThread = new AcceptThread(0);
-                        Log.d(TAG, "Starting default playerAcceptThread: " + playerAcceptThread);
+                        Log.v(TAG, "Starting default playerAcceptThread: " + playerAcceptThread);
                         playerAcceptThread.start();
 
                         BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
@@ -300,7 +300,7 @@ public class BluetoothActivity extends AppCompatActivity {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "PERMISSION GRANTED BY USER!!!");
+                Log.v(TAG, "PERMISSION GRANTED BY USER!!!");
             } else {
                 Log.e(TAG, "PERMISSIONS DENIED BY USER!!!");
                 System.exit(-1);
@@ -328,10 +328,22 @@ public class BluetoothActivity extends AppCompatActivity {
                         == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
                     discoverable = true;
                     Log.d(TAG, "We are now discoverable!");
-                } else {
-                    discoverable = false;
-                    Log.d(TAG, "We are no longer discoverable!");
+                    Thread discoverableThread = new Thread() {
+                        public void run() {
+                            try {
+                                Thread.sleep(30000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            discoverable = false;
+                            Log.d(TAG, "We are no longer discoverable!");
+                        }
+                    };
+                    discoverableThread.start();
                 }
+//                else {
+//                    discoverable = false;
+//                }
             }
         }
     };
@@ -377,7 +389,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private class AcceptThread extends Thread {
         private int playerIdx;
         private BluetoothServerSocket serverSocket;
-        private boolean canceled;
+        private volatile boolean canceled;
 
         public AcceptThread(int playerIdx) {
             this.playerIdx = playerIdx;
@@ -394,9 +406,9 @@ public class BluetoothActivity extends AppCompatActivity {
             BluetoothSocket socket = null;
             while (true) {
                 try {
-                    Log.d(TAG, "Now waiting to receive a message!");
+                    Log.v(TAG, "Now waiting to receive a message!");
                     socket = serverSocket.accept();
-                    Log.d(TAG, "Exited accept!");
+                    Log.v(TAG, "Exited accept!");
                 } catch (IOException e) {
                     if (!canceled) {
                         Log.e(TAG, "Socket's accept() method failed: " + this);
@@ -431,7 +443,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     }
 
                     // A connection was accepted
-                    Log.d(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
+                    Log.v(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
                     ReceiveMessageRunnable receiveMessageRunnable = new ReceiveMessageRunnable(playerIdx, socket);
                     executorsList[playerIdx].submit(receiveMessageRunnable);
                     // TODO: Is this next line REALLY necessary? Remove and test without
@@ -444,7 +456,7 @@ public class BluetoothActivity extends AppCompatActivity {
         // Closes the connect socket and causes the thread to finish.
         public void cancel() {
             try {
-                Log.d(TAG, "Canceled accept thread on idx: " + playerIdx + "!");
+                Log.v(TAG, "Canceled accept thread on idx: " + playerIdx + "!");
                 canceled = true;
                 serverSocket.close();
             } catch (IOException e) {
@@ -453,7 +465,7 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
-    private class ReceiveMessageRunnable extends Thread {
+    private class ReceiveMessageRunnable implements Runnable {
         private int playerIdx;
         private BluetoothSocket socket;
         public ReceiveMessageRunnable(int playerIdx, BluetoothSocket socket) {
@@ -463,7 +475,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
         public void run() {
             try {
-//                Log.d(TAG, "connected: " + socket.isConnected());
+                Log.v(TAG, "connected: " + socket.isConnected());
                 // Open communication streams to receive message and sent ACK
                 ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -471,13 +483,13 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 // Sent ACK
                 BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.ACK,0,"ACK-" + inMessage.id);
-                Log.d(TAG, "Sending ACK!!");
+                Log.v(TAG, "Sending ACK!!");
                 messageOutputStream.writeObject(ackMessage);
 
                 try {
                     messageInputStream.read();
                 } catch (Exception ex) {
-                    Log.d(TAG, "ACK should've been recv'd....remote seems closed...closing");
+                    Log.v(TAG, "ACK should've been recv'd....remote seems closed...closing");
                 }
 
                 socket.close();
@@ -485,21 +497,21 @@ public class BluetoothActivity extends AppCompatActivity {
                 // Act accordingly depending on the type of message just received.
                 if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
                         && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
-                    Log.d(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
+                    Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
                     if (!potentialPlayers.contains(socket.getRemoteDevice())) {
                         potentialPlayers.add(socket.getRemoteDevice());
                     }
                 } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
-                    Log.d(TAG, "Received Join response! I am now player: " + inMessage.value);
+                    Log.v(TAG, "Received Join response! I am now player: " + inMessage.value);
                     // Cancel playerAcceptThread on the default channel (0) and start on correct one
                     playerAcceptThread.cancel();
                     playerAcceptThread = new AcceptThread(inMessage.value);
-                    Log.d(TAG, "Starting REAL playerAcceptThread: " + playerAcceptThread);
+                    Log.v(TAG, "Starting REAL playerAcceptThread: " + playerAcceptThread);
                     playerAcceptThread.start();
                 } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
                 } else {
-                    Log.d(TAG, "Some other kind of message has arrived!");
+                    Log.e(TAG, "Some other kind of message has arrived!");
                 }
 
             } catch (StreamCorruptedException e) {
@@ -542,7 +554,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 // Open up a RFCOMM channel using the provided UUID
                 socket = device.createRfcommSocketToServiceRecord(channelUUID);
                 socket.connect();
-                Log.d(TAG, "Correctly Connected on " + channelUUID);
+                Log.v(TAG, "Correctly Connected on " + channelUUID);
 
                 // Open bi-directional communication streams on the channel
                 ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -551,14 +563,14 @@ public class BluetoothActivity extends AppCompatActivity {
                 // Actually send the message
                 messageOutputStream.writeObject(message);
                 messageOutputStream.flush();
-                Log.d(TAG, "Correctly Sent a message");
+                Log.v(TAG, "Correctly Sent a message");
 
                 // Attempt to receive ACK message
                 // TODO: Has the potential to block forever if ack never arrives
                 BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
                 if (potentialAck.type == BluetoothMessage.Type.ACK
                         && potentialAck.body.equals("ACK-" + message.id)) {
-                    Log.d(TAG, "Received CORRECT ACK");
+                    Log.v(TAG, "Received CORRECT ACK");
                     messageOutputStream.close();
                     messageInputStream.close();
                     socket.close();

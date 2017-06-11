@@ -44,9 +44,8 @@ public class BluetoothActivity extends AppCompatActivity {
     // View Elements
     private Button hostGameButton;
     private Button joinGameButton;
-    private Button pingAllClientsButton;
-    private Button acceptButton;
-    private TextView messageBox;
+    private Button approvePlayersButton;
+    private Button pingAllPlayersButton;
 
     // Final Stuff
     public static final String SERVICE_NAME = "Cowpitalism";
@@ -67,22 +66,18 @@ public class BluetoothActivity extends AppCompatActivity {
     // Bluetooth Stuff
     private BluetoothAdapter mBluetoothAdapter;
     private boolean discoverable;
-    private int discoveryCounter;
-    private int serverCheckCounter;
 
     // Device-Related Lists
     private List<BluetoothDevice> potentialPlayers;
     private BluetoothDevice[] playersList;
     private ExecutorService[] executorsList;
     private List<BluetoothDevice> potentialHosts;
+    private AcceptThread[] hostAcceptThreads;
 
+    private AcceptThread playerAcceptThread;
 
     private CustomArrayAdapter hostsAdapter;
     private Handler handler;
-
-    // TODO: There should be 1 server socket PER player. Probably should be in the AcceptThread class
-    private BluetoothServerSocket serverSocket;
-
 
     // TODO: Maybe add an infinite progressbar spinner that says "Waiting for host approval once"
     // TODO:    upon sending a join message.
@@ -96,27 +91,20 @@ public class BluetoothActivity extends AppCompatActivity {
 
         hostGameButton = (Button) findViewById(R.id.hostGameButton);
         joinGameButton = (Button) findViewById(R.id.joinGameButton);
-        pingAllClientsButton = (Button) findViewById(R.id.pingClientsButton);
-        acceptButton = (Button) findViewById(R.id.acceptButton);
+        approvePlayersButton = (Button) findViewById(R.id.approvePlayersButton);
+        pingAllPlayersButton = (Button) findViewById(R.id.pingPlayersButton);
         handler = new Handler();
 
-        playersList = null;
+        // TODO: Maybe change later to initialize these upon starting a game
+        playersList = new BluetoothDevice[MAX_DEVICES];
         executorsList = new ExecutorService[MAX_DEVICES];
         for (int i = 0; i < MAX_DEVICES; i++) {
             executorsList[i] = Executors.newSingleThreadExecutor();
         }
+        hostAcceptThreads = new AcceptThread[MAX_DEVICES];
 
 
         potentialPlayers = new ArrayList<>();
-
-        acceptButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "ACCEPT BUTTON PRESSED!!!");
-//                AcceptThread acceptThread = new AcceptThread();
-//                acceptThread.start();
-            }
-        });
 
         hostGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,8 +129,8 @@ public class BluetoothActivity extends AppCompatActivity {
                  * TODO: Make sure the individual AcceptThreads for each device checks the mac
                  * TODO: address of incoming messages to make sure their from the only perm. device.
                  */
-                AcceptThread acceptThread = new AcceptThread(0);
-                acceptThread.start();
+                hostAcceptThreads[0] = new AcceptThread(0);
+                hostAcceptThreads[0].start();
             }
         });
 
@@ -177,8 +165,8 @@ public class BluetoothActivity extends AppCompatActivity {
                          * this AcceptThread will cancel itself, and start a new permanent one with
                          * the correct channelUUID rather than the default one(0).
                          */
-                        AcceptThread acceptThread = new AcceptThread(0);
-                        acceptThread.start();
+                        playerAcceptThread = new AcceptThread(0);
+                        playerAcceptThread.start();
 
                         BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
                         SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(gameHost, MY_UUIDS[0], joinMessage);
@@ -206,18 +194,51 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         });
 
-        class MyThread extends Thread {
-            int number;
-            public MyThread(int number) {
-                this.number = number;
-            }
+        approvePlayersButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                Log.d(TAG, "THREAD NUMBER " + number);
-            }
-        }
+            public void onClick(View v) {
+                Log.d(TAG, "Approving players...." + potentialPlayers.size());
+                Log.d(TAG, "-----------------------");
+                if (potentialPlayers.size() > MAX_DEVICES) {
+                    Log.e(TAG, "Too many people joined game!");
+                    return;
+                }
 
-        pingAllClientsButton.setOnClickListener(new View.OnClickListener() {
+                // Stop initial accept thread
+                hostAcceptThreads[0].cancel();
+                hostAcceptThreads[0] = null;
+
+
+                // Ensure we clear out the playersList from a previous game (maybe not necessary)
+                for (int i = 0; i < MAX_DEVICES; i++) {
+                    playersList[i] = null;
+                }
+
+                /**
+                 * Put each player into the list, start a thread to accept incoming connections
+                 * from them on their given channelUUID, then send them a message containing that channelUUID
+                 * with which they will communicate with this host for the remainder of the game.
+                 * Upon recv'ing this message, each player will stop listening on the default
+                 * channel (0) and will only listen on this given channelUUID.
+                 */
+                for (int i = 0 ; i < potentialPlayers.size(); i++) {
+                    playersList[i] = potentialPlayers.get(i);
+                    Log.d(TAG, "Adding " + deviceName(playersList[i]) + " to position " + i);
+
+                    hostAcceptThreads[i] = new AcceptThread(i);
+                    hostAcceptThreads[i].start();
+
+                    // Message contains "i", which is the playerIdx which will yield the UUID
+                    BluetoothMessage joinResponseMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_RESPONSE,i,"");
+                    SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[0],joinResponseMessage);
+                    executorsList[i].submit(sendMessageRunnable);
+                }
+                Log.d(TAG, "-----------------------");
+            }
+        });
+
+
+        pingAllPlayersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -347,10 +368,13 @@ public class BluetoothActivity extends AppCompatActivity {
      */
     private class AcceptThread extends Thread {
         private int playerIdx;
+        private BluetoothServerSocket serverSocket;
+        private boolean canceled;
 
         public AcceptThread(int playerIdx) {
+            this.playerIdx = playerIdx;
+            this.canceled = false;
             try {
-                this.playerIdx = playerIdx;
                 // Open an RFCOMM channel with the channelUUID corresponding to the player.
                 serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, MY_UUIDS[playerIdx]);
             } catch (IOException e) {
@@ -360,7 +384,7 @@ public class BluetoothActivity extends AppCompatActivity {
         public void run() {
 
             BluetoothSocket socket = null;
-            while (true) {
+            while (!canceled) {
                 try {
                     Log.d(TAG, "Now waiting to receive a message!");
                     socket = serverSocket.accept();
@@ -384,7 +408,9 @@ public class BluetoothActivity extends AppCompatActivity {
         // Closes the connect socket and causes the thread to finish.
         public void cancel() {
             try {
+                Log.d(TAG, "Canceled accept thread on idx: " + playerIdx + "!");
                 serverSocket.close();
+                canceled = true;
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
@@ -427,6 +453,12 @@ public class BluetoothActivity extends AppCompatActivity {
                     if (!potentialPlayers.contains(socket.getRemoteDevice())) {
                         potentialPlayers.add(socket.getRemoteDevice());
                     }
+                } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
+                    Log.d(TAG, "Received Join response! I am now player: " + inMessage.value);
+                    // Cancel playerAcceptThread on the default channel (0) and start on correct one
+                    playerAcceptThread.cancel();
+                    playerAcceptThread = new AcceptThread(inMessage.value);
+                    playerAcceptThread.start();
                 } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
                 } else {

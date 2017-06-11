@@ -75,9 +75,13 @@ public class BluetoothActivity extends AppCompatActivity {
     private List<BluetoothDevice> potentialHosts;
     private AcceptThread[] hostAcceptThreads;
 
+    // Variables for the Players Only
+    private BluetoothDevice hostDevice;
     private AcceptThread playerAcceptThread;
-
     private CustomArrayAdapter hostsAdapter;
+
+    private boolean isHost;
+
     private Handler handler;
 
     // TODO: Maybe add an infinite progressbar spinner that says "Waiting for host approval once"
@@ -110,6 +114,7 @@ public class BluetoothActivity extends AppCompatActivity {
         hostGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isHost = true;
                 Log.d(TAG, "Now discoverable for the next 30 seconds!");
                 Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                 discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
@@ -138,7 +143,8 @@ public class BluetoothActivity extends AppCompatActivity {
         joinGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                isHost = false;
+                hostDevice = null;
                 // Create ArrayList to contain the devices found (potential game hosts)
                 potentialHosts = new ArrayList<>();
                 hostsAdapter = new CustomArrayAdapter(getApplicationContext(), potentialHosts);
@@ -156,8 +162,8 @@ public class BluetoothActivity extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        BluetoothDevice gameHost = potentialHosts.get(position);
-                        Log.d(TAG, "Game host will be: " + gameHost);
+                        hostDevice = potentialHosts.get(position);
+                        Log.d(TAG, "Game host will be: " + hostDevice);
                         dialog.dismiss();
 
                         /**
@@ -171,7 +177,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         playerAcceptThread.start();
 
                         BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
-                        SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(gameHost, MY_UUIDS[0], joinMessage);
+                        SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, MY_UUIDS[0], joinMessage);
                         executorsList[0].submit(sendMessageRunnable);
                     }
                 });
@@ -400,7 +406,32 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
 
                 if (socket != null) {
+                    // If I am a player, and this communication is not from the host, then ignore
+                    if (!isHost) {
+                        if (hostDevice == null) {
+                            /**
+                             * If I am a player than hasn't selected a host yet, I shouldn't
+                             * receive anything
+                             */
+                            return;
+                        } else if (!hostDevice.equals(socket.getRemoteDevice())) {
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return;
+                        }
+                    } else {
+                        /**
+                         * TODO: Check if the device corresponds to the player that should be
+                         * TODO:    communicating with me at this UUID.
+                         * TODO:    e.g. socket.getRemoteDevice().equals(playerList[playerIdx])
+                         */
+                    }
+
                     // A connection was accepted
+                    Log.d(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
                     ReceiveMessageRunnable receiveMessageRunnable = new ReceiveMessageRunnable(playerIdx, socket);
                     executorsList[playerIdx].submit(receiveMessageRunnable);
                     // TODO: Is this next line REALLY necessary? Remove and test without

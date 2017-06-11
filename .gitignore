@@ -14,3 +14,5 @@ build.gradle
 .idea/encodings.xml
 .idea/misc.xml
 .idea/dictionaries/
+project_notes.txt
+reboot_devices.bash

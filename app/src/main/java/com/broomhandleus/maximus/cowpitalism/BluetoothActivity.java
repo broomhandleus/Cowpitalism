@@ -28,43 +28,66 @@ import android.widget.TextView;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class BluetoothActivity extends AppCompatActivity {
 
-    Button hostGameButton;
-    Button joinGameButton;
-    Button pingAllClientsButton;
+    // View Elements
+    private Button hostGameButton;
+    private Button joinGameButton;
+    private Button pingAllClientsButton;
+    private Button acceptButton;
+    private TextView messageBox;
 
-    public static final String NAME = "Cowpitalism";
+    // Final Stuff
+    public static final String SERVICE_NAME = "Cowpitalism";
     public static final String TAG = "BluetoothActivity";
-    public static final UUID MY_UUID = UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9");
+    public static final UUID[] MY_UUIDS = {
+            UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
+            UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
+            UUID.fromString("ebb1690b-5b07-450f-b915-4d41698b199d"),
+            UUID.fromString("dc1d38dd-222d-4c9c-aa0c-a9f0cd1dfcb6"),
+            UUID.fromString("8c864b60-b369-44fa-85ff-86111fd4ff33"),
+            UUID.fromString("f7b45c10-7602-487c-9bba-5a2be3ddfff4"),
+            UUID.fromString("e89f9548-492b-4bcd-824d-cc80d204f47b")
+    };
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 23;
-    BluetoothAdapter mBluetoothAdapter;
-    BluetoothDevice maxsPhone;
-    TextView messageBox;
+    public static final int MAX_DEVICES = 7;
 
+    // Bluetooth Stuff
+    private BluetoothAdapter mBluetoothAdapter;
     private boolean discoverable;
     private int discoveryCounter;
     private int serverCheckCounter;
-    private List<BluetoothDevice> discoveredDevices;
-    private List<BluetoothDevice> confirmedPeers;
-    private List<BluetoothDevice> playerDevices;
 
-    ArrayList<BluetoothDevice> potentialHosts;
-    CustomArrayAdapter hostsAdapter;
-    private BluetoothServerSocket serverSocket;
+    // Device-Related Lists
+    private List<BluetoothDevice> potentialPlayers;
+    private BluetoothDevice[] playersList;
+    private ExecutorService[] executorsList;
+    private List<BluetoothDevice> potentialHosts;
+
+
+    private CustomArrayAdapter hostsAdapter;
     private Handler handler;
 
+    // TODO: There should be 1 server socket PER player. Probably should be in the AcceptThread class
+    private BluetoothServerSocket serverSocket;
+
+
+    // TODO: Maybe add an infinite progressbar spinner that says "Waiting for host approval once"
+    // TODO:    upon sending a join message.
+
+    // TODO: Approval of potentialPlayers into playersList and sending them each a joinResponse msg.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +97,26 @@ public class BluetoothActivity extends AppCompatActivity {
         hostGameButton = (Button) findViewById(R.id.hostGameButton);
         joinGameButton = (Button) findViewById(R.id.joinGameButton);
         pingAllClientsButton = (Button) findViewById(R.id.pingClientsButton);
+        acceptButton = (Button) findViewById(R.id.acceptButton);
         handler = new Handler();
 
+        playersList = null;
+        executorsList = new ExecutorService[MAX_DEVICES];
+        for (int i = 0; i < MAX_DEVICES; i++) {
+            executorsList[i] = Executors.newSingleThreadExecutor();
+        }
 
-        discoveredDevices = new ArrayList<>();
-        confirmedPeers = new ArrayList<>();
-        playerDevices = new ArrayList<>();
+
+        potentialPlayers = new ArrayList<>();
+
+        acceptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "ACCEPT BUTTON PRESSED!!!");
+//                AcceptThread acceptThread = new AcceptThread();
+//                acceptThread.start();
+            }
+        });
 
         hostGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +126,22 @@ public class BluetoothActivity extends AppCompatActivity {
                 discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
                 startActivity(discoverableIntent);
 
-                AcceptThread acceptThread = new AcceptThread();
+
+                /**
+                 * Since this device is now going to be the host, we will start accepting incoming
+                 * connections from potential players, we will start a background thread listening
+                 * for those incoming connections on the first UUID's channel.
+                 *
+                 * Once the host is done letting people try to join, this AcceptThread will be
+                 * canceled/closed somehow. Then each approved player, will receive a message
+                 * containing their channelUUID (one of the seven available).
+                 *
+                 * e.g. MY_UUIDS[0] will no longer be receiving join requests from people,
+                 * but rather it will be assigned to communicate with one specific player.
+                 * TODO: Make sure the individual AcceptThreads for each device checks the mac
+                 * TODO: address of incoming messages to make sure their from the only perm. device.
+                 */
+                AcceptThread acceptThread = new AcceptThread(0);
                 acceptThread.start();
             }
         });
@@ -119,12 +171,18 @@ public class BluetoothActivity extends AppCompatActivity {
                         Log.d(TAG, "Game host will be: " + gameHost);
                         dialog.dismiss();
 
-                        AcceptThread acceptThread = new AcceptThread();
+                        /**
+                         * Start temporary Background Thread that receives the first incoming message
+                         * from the host. It will contain the channelUUID. At that point,
+                         * this AcceptThread will cancel itself, and start a new permanent one with
+                         * the correct channelUUID rather than the default one(0).
+                         */
+                        AcceptThread acceptThread = new AcceptThread(0);
                         acceptThread.start();
 
                         BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
-                        ConnectThread connectThread = new ConnectThread(gameHost, joinMessage);
-                        connectThread.start();
+                        SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(gameHost, MY_UUIDS[0], joinMessage);
+                        executorsList[0].submit(sendMessageRunnable);
                     }
                 });
 
@@ -166,23 +224,21 @@ public class BluetoothActivity extends AppCompatActivity {
                 Log.d(TAG, "Pinging the clients!!!");
                 Log.d(TAG, "----------------------");
                 // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
-//                int i = 0;
-//                for (BluetoothDevice device : playerDevices) {
-//                    if (device.getName() != null) {
-//                        Log.d(TAG, "Pinging " + device.getName());
-//                    } else {
-//                        Log.d(TAG, "Pinging " + device.getAddress());
-//                    }
-//                    BluetoothMessage pingMessage = new BluetoothMessage(BluetoothMessage.Type.PING_CLIENT, 0, "");
-//                    ConnectThread connectThread = new ConnectThread(device,pingMessage);
-//                    connectThread.start();
-////                    MyThread thread = new MyThread(i++);
-////                    thread.start();
-//                }
-                BluetoothMessage pingMessage = new BluetoothMessage(BluetoothMessage.Type.PING_CLIENT, 0, "");
-                TestThread testThread = new TestThread(pingMessage);
-                testThread.start();
+                for (int i = 0; i < MAX_DEVICES; i++) {
+                    // .....because we don't associate ourselves with those null BluetoothDevice's.
+                    if (playersList[i] == null) {
+                        continue;
+                    }
 
+                    if (playersList[i].getName() != null) {
+                        Log.d(TAG, "Pinging " + playersList[i].getName());
+                    } else {
+                        Log.d(TAG, "Pinging " + playersList[i].getAddress());
+                    }
+                    BluetoothMessage pingMessage = new BluetoothMessage(BluetoothMessage.Type.PING_CLIENT, 0, "");
+                    SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[i],pingMessage);
+                    executorsList[i].submit(sendMessageRunnable);
+                }
             }
         });
 
@@ -285,22 +341,22 @@ public class BluetoothActivity extends AppCompatActivity {
     };
 
     /**
-     * AcceptThread is run on the game host.
-     * It will receive all incoming messages from other devices
-     * at first they will be messages to join the game,
-     * then gameplay messages.
+     * AcceptThread can is used in BOTH the Host and the players.
+     * It will receive all incoming messages from the device
+     * corresponding to the given playerIdx.
      */
     private class AcceptThread extends Thread {
+        private int playerIdx;
 
-        public AcceptThread() {
+        public AcceptThread(int playerIdx) {
             try {
-                // MY_UUID is the app's UUID string, also used by the client code.
-                serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+                this.playerIdx = playerIdx;
+                // Open an RFCOMM channel with the channelUUID corresponding to the player.
+                serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, MY_UUIDS[playerIdx]);
             } catch (IOException e) {
                 Log.e(TAG, "Socket's listen() method failed", e);
             }
         }
-
         public void run() {
 
             BluetoothSocket socket = null;
@@ -316,58 +372,11 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 if (socket != null) {
                     // A connection was accepted
-                    try {
-                        InputStream rawInputStream = socket.getInputStream();
-                        ObjectInputStream messageInputStream = new ObjectInputStream(rawInputStream);
-                        Log.d(TAG, "Attempting to read message!");
-                        BluetoothMessage joinMessage = (BluetoothMessage) messageInputStream.readObject();
-                        Log.d(TAG, "Message READ!!!");
-                        BluetoothDevice device = socket.getRemoteDevice();
-
-                        messageInputStream.close();
-                        rawInputStream.close();
-                        socket.close();
-                        socket = null;
-
-
-                        // If we are in discovery/join mode before the game, we only accept join messages
-                        if (discoverable) {
-                            if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST
-                                    && joinMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
-                                Log.d(TAG, "Adding Device: " + device.getName() + " to the game!");
-                                if (!playerDevices.contains(device)) {
-                                    playerDevices.add(device);
-                                }
-                            } else {
-                                Log.e(TAG, "NOT a join message!");
-                            }
-                        } else {
-                            // if we are in gameplay mode
-                            if (joinMessage.type == BluetoothMessage.Type.JOIN_REQUEST) {
-                                Log.d(TAG, "Denying device trying to join in middle of game: " + device.getName() +"!");
-                            } else if (joinMessage.type == BluetoothMessage.Type.PING_CLIENT){
-                                Log.d(TAG,"YOU HAVE BEEN PINGED!!!");
-                                // Create Dialog that displays the ping!
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(BluetoothActivity.this);
-                                        builder.setTitle("PING!!!");
-                                        builder.setMessage("You have been pinged!");
-                                        builder.create().show();
-                                    }
-                                });
-                            } else {
-                                Log.d(TAG, "Some other kind of message has arrived!");
-                            }
-                        }
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    ReceiveMessageRunnable receiveMessageRunnable = new ReceiveMessageRunnable(playerIdx, socket);
+                    executorsList[playerIdx].submit(receiveMessageRunnable);
+                    // TODO: Is this next line REALLY necessary? Remove and test without
+                    // TODO:    only once everything is in decent working order.
+                    socket = null;
                 }
             }
         }
@@ -382,65 +391,125 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
+    private class ReceiveMessageRunnable extends Thread {
+        private int playerIdx;
+        private BluetoothSocket socket;
+        public ReceiveMessageRunnable(int playerIdx, BluetoothSocket socket) {
+            this.playerIdx = playerIdx;
+            this.socket = socket;
+        }
+
+        public void run() {
+            try {
+//                Log.d(TAG, "connected: " + socket.isConnected());
+                // Open communication streams to receive message and sent ACK
+                ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                BluetoothMessage inMessage = (BluetoothMessage) messageInputStream.readObject();
+
+                // Sent ACK
+                BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.ACK,0,"ACK-" + inMessage.id);
+                Log.d(TAG, "Sending ACK!!");
+                messageOutputStream.writeObject(ackMessage);
+
+                try {
+                    messageInputStream.read();
+                } catch (Exception ex) {
+                    Log.d(TAG, "ACK should've been recv'd....remote seems closed...closing");
+                }
+
+                socket.close();
+
+                // Act accordingly depending on the type of message just received.
+                if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
+                        && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
+                    Log.d(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
+                    if (!potentialPlayers.contains(socket.getRemoteDevice())) {
+                        potentialPlayers.add(socket.getRemoteDevice());
+                    }
+                } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
+                    Log.d(TAG,"I HAVE BEEN PINGED!!!");
+                } else {
+                    Log.d(TAG, "Some other kind of message has arrived!");
+                }
+
+            } catch (StreamCorruptedException e) {
+                e.printStackTrace();
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
-     * ConnectThread allows a device to connect to the specified game host in the background
+     * SendMessageRunnable allows a device to connect to the specified game host in the background
      * and request to join the game.
      */
-    private class ConnectThread extends Thread {
-        private BluetoothSocket localSocket;
+    private class SendMessageRunnable implements Runnable {
+        private BluetoothDevice device;
+        private UUID channelUUID;
         private BluetoothMessage message;
+        // Not set until run()
+        private BluetoothSocket socket;
 
-        public ConnectThread(BluetoothDevice remoteDevice, BluetoothMessage message) {
+        public SendMessageRunnable(BluetoothDevice device, UUID channelUUID, BluetoothMessage message) {
+            this.device = device;
+            this.channelUUID = channelUUID;
             this.message = message;
-            try {
-                // Get a BluetoothSocket to connect with the given BluetoothDevice.
-                // MY_UUID is the app's UUID string, also used in the server code.
-                localSocket = remoteDevice.createRfcommSocketToServiceRecord(MY_UUID);
-            } catch (IOException e) {
-                Log.e(TAG, "Socket's create() method failed", e);
-            }
         }
 
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
             mBluetoothAdapter.cancelDiscovery();
 
-            try {
-                // Connect to the remote device through the socket. This call blocks
-                // until it succeeds or throws an exception.
-                localSocket.connect();
-                Log.d(TAG, "Correctly Connected to remote device!");
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and return.
-                try {
-                    localSocket.close();
-                    Log.e(TAG, "Could not connect to remote device!--------------");
-                } catch (IOException closeException) {
-                    Log.e(TAG, "Could not close the client socket", closeException);
-                }
-                connectException.printStackTrace();
-                return;
-            }
 
-            // The connection attempt succeeded. Perform work associated with
-            // Send the Game host a message requesting to join.
             try {
-                // Open up a channel to the game host
-                OutputStream rawOutputStream = localSocket.getOutputStream();
-                ObjectOutputStream messageOutputStream = new ObjectOutputStream(rawOutputStream);
+                // Open up a RFCOMM channel using the provided UUID
+                socket = device.createRfcommSocketToServiceRecord(channelUUID);
+                socket.connect();
+                Log.d(TAG, "Correctly Connected on " + channelUUID);
+
+                // Open bi-directional communication streams on the channel
+                ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
 
                 // Actually send the message
                 messageOutputStream.writeObject(message);
-                Log.d(TAG,"Correctly Sent Message");
+                messageOutputStream.flush();
+                Log.d(TAG, "Correctly Sent a message");
 
-                // Close connection with the host
-                //localSocket.close();
-                //WHY CANT I CLOSE HERE??
+                // Attempt to receive ACK message
+                // TODO: Has the potential to block forever if ack never arrives
+                BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
+                if (potentialAck.type == BluetoothMessage.Type.ACK
+                        && potentialAck.body.equals("ACK-" + message.value)) {
+                    Log.d(TAG, "Received CORRECT ACK");
+                    messageOutputStream.close();
+                    messageInputStream.close();
+                    socket.close();
+                } else {
+                    Log.e(TAG, "Incorrect ACK!!!");
+                    messageOutputStream.close();
+                    messageInputStream.close();
+                    socket.close();
+                }
+            } catch (IOException e) {
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
 
-                messageOutputStream.close();
-                rawOutputStream.close();
-                localSocket.close();
-            } catch (IOException ex) {
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                e.printStackTrace();
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
@@ -449,148 +518,7 @@ public class BluetoothActivity extends AppCompatActivity {
         // Closes the client socket and causes the thread to finish.
         public void cancel() {
             try {
-                localSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Could not close the client socket", e);
-            }
-        }
-    }
-
-    private class TestThread extends Thread {
-        private BluetoothMessage message;
-
-        public TestThread(BluetoothMessage message) {
-            this.message = message;
-        }
-
-        public void run() {
-            // Cancel discovery because it otherwise slows down the connection.
-            mBluetoothAdapter.cancelDiscovery();
-
-            BluetoothSocket localSocket1 = null;
-            BluetoothSocket localSocket2 = null;
-            try {
-                localSocket1 = playerDevices.get(0).createRfcommSocketToServiceRecord(MY_UUID);
-                localSocket1.connect();
-                Log.d(TAG, "Correctly Connected Once!");
-                OutputStream rawOutputStream1 = localSocket1.getOutputStream();
-                ObjectOutputStream messageOutputStream1 = new ObjectOutputStream(rawOutputStream1);
-
-                // Actually send the message
-                messageOutputStream1.writeObject(message);
-                Log.d(TAG, "Correctly Sent First Message");
-
-                messageOutputStream1.close();
-                rawOutputStream1.close();
-                localSocket1.close();
-
-
-                localSocket2 = playerDevices.get(0).createRfcommSocketToServiceRecord(MY_UUID);
-                localSocket2.connect();
-                Log.d(TAG, "Correctly Connected Twice!");
-                OutputStream rawOutputStream2 = localSocket2.getOutputStream();
-                ObjectOutputStream messageOutputStream2 = new ObjectOutputStream(rawOutputStream2);
-
-                // Actually send the message
-                messageOutputStream2.writeObject(message);
-                Log.d(TAG, "Correctly Sent Second Message");
-
-                messageOutputStream2.close();
-                rawOutputStream2.close();
-                localSocket1.close();
-            } catch (IOException e) {
-                try {
-                    if (localSocket1 != null) {
-                        localSocket1.close();
-                    }
-                    if (localSocket2 != null) {
-                        localSocket2.close();
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-        private class RelayConnectThread extends Thread {
-            private List<BluetoothSocket> localSockets;
-            private BluetoothMessage message;
-
-            public RelayConnectThread(BluetoothMessage message) {
-                this.message = message;
-                localSockets = new ArrayList<>();
-                try {
-                    // Get a BluetoothSocket to connect with the given BluetoothDevice.
-                    // MY_UUID is the app's UUID string, also used in the server code.
-                    for (int i = 0; i < playerDevices.size(); i++) {
-                        localSockets.add(playerDevices.get(i).createRfcommSocketToServiceRecord(MY_UUID));
-                    }
-                } catch (IOException e) {
-                    Log.e(TAG, "Socket's create() method failed", e);
-                }
-            }
-
-            public void run() {
-                // Cancel discovery because it otherwise slows down the connection.
-                mBluetoothAdapter.cancelDiscovery();
-
-                try {
-                    // Connect to the remote device through the socket. This call blocks
-                    // until it succeeds or throws an exception.
-                    for (int i = 0; i < playerDevices.size(); i++) {
-                        localSockets.get(i).connect();
-                    }
-                    Log.d(TAG, "Correctly Connected to all remote devices!");
-                } catch (IOException connectException) {
-                    // Unable to connect; close the socket and return.
-                    try {
-                        for (int i = 0; i < playerDevices.size(); i++) {
-                            localSockets.get(i).close();
-                        }
-                        Log.e(TAG, "Could not connect to a remote device!--------------");
-                    } catch (IOException closeException) {
-                        Log.e(TAG, "Could not close a client socket", closeException);
-                    }
-                    connectException.printStackTrace();
-                    return;
-                }
-
-                // The connection attempt succeeded. Perform work associated with
-                // Send the Game host a message requesting to join.
-                try {
-                    // Open up a channel to the game host
-                    for (int i = 0; i < playerDevices.size(); i++) {
-                        OutputStream rawOutputStream = localSockets.get(i).getOutputStream();
-                        ObjectOutputStream messageOutputStream = new ObjectOutputStream(rawOutputStream);
-
-                        // Actually send the message
-                        messageOutputStream.writeObject(message);
-                        Log.d(TAG,"Correctly Sent Message");
-
-                        // Close connection with the host
-                        //localSocket.close();
-                        messageOutputStream.close();
-                        rawOutputStream.close();
-                        localSockets.get(i).close();
-                        //WHY CANT I CLOSE HERE??
-                    }
-                    localSockets.clear();
-
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-            }
-
-        // Closes the client socket and causes the thread to finish.
-        public void cancel() {
-            try {
-                for (int i = 0; i < playerDevices.size(); i++) {
-                    localSockets.get(i).close();
-                }
+                socket.close();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the client socket", e);
             }
@@ -612,22 +540,26 @@ public class BluetoothActivity extends AppCompatActivity {
     private static class BluetoothMessage implements Serializable {
         public static final int JOIN_REQUEST_VALUE = 12345;
         private enum Type {
+            ACK,
+            PING_CLIENT,
             JOIN_REQUEST,
-            PING_CLIENT
+            JOIN_RESPONSE
         }
 
         public Type type;
         public int value;
         public String body;
+        public UUID id;
 
         public BluetoothMessage(Type type, int value, String body) {
             this.type = type;
             this.value = value;
             this.body = body;
+            this.id = UUID.randomUUID();
         }
     }
     public class CustomArrayAdapter extends ArrayAdapter<BluetoothDevice> {
-        public CustomArrayAdapter(Context context, ArrayList<BluetoothDevice> devices) {
+        public CustomArrayAdapter(Context context, List<BluetoothDevice> devices) {
             super(context, 0, devices);
         }
 
@@ -644,6 +576,14 @@ public class BluetoothActivity extends AppCompatActivity {
                 textView.setText(device.getName() + ": " + device.getAddress());
             }
             return convertView;
+        }
+    }
+
+    private static String deviceName(BluetoothDevice device) {
+        if (device.getName() == null) {
+            return device.getAddress();
+        } else {
+            return device.getName();
         }
     }
 }

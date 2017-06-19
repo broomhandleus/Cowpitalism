@@ -610,29 +610,12 @@ public class HostInGameActivity extends AppCompatActivity {
                 }
 
                 if (socket != null) {
-                    // If I am a player, and this communication is not from the host, then ignore
-                    if (!isHost) {
-                        if (hostDevice == null) {
-                            /**
-                             * If I am a player than hasn't selected a host yet, I shouldn't
-                             * receive anything
-                             */
-                            return;
-                        } else if (!hostDevice.equals(socket.getRemoteDevice())) {
-                            try {
-                                socket.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            return;
-                        }
-                    } else {
-                        /**
-                         * TODO: Check if the device corresponds to the player that should be
-                         * TODO:    communicating with me at this UUID.
-                         * TODO:    e.g. socket.getRemoteDevice().equals(playerList[playerIdx])
-                         */
-                    }
+
+                    /**
+                     * TODO: Check if the device corresponds to the player that should be
+                     * TODO:    communicating with me at this UUID.
+                     * TODO:    e.g. socket.getRemoteDevice().equals(playerList[playerIdx])
+                     */
 
                     // A connection was accepted
                     Log.v(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
@@ -708,14 +691,6 @@ public class HostInGameActivity extends AppCompatActivity {
                         Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
 
                     }
-
-                } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
-                    Log.d(TAG, "I have been accepted to join game!. I am player: " + inMessage.value);
-                    // Cancel playerAcceptThread on the default channel (0) and start on correct one
-                    playerAcceptThread.cancel();
-                    playerAcceptThread = new AcceptThread(inMessage.value);
-                    Log.v(TAG, "Starting REAL playerAcceptThread: " + playerAcceptThread);
-                    playerAcceptThread.start();
                 } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
                 } else {

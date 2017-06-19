@@ -116,7 +116,7 @@ public class HostInGameActivity extends AppCompatActivity {
 
 
 
-
+        startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

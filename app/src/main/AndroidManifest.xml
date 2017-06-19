@@ -26,7 +26,7 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".InGameActivity"
+            android:name=".HostInGameActivity"
             android:label="@string/title_activity_in_game"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">

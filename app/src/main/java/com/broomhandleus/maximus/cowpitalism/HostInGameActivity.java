@@ -15,9 +15,9 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
-public class InGameActivity extends AppCompatActivity {
+public class HostInGameActivity extends AppCompatActivity {
 
-    public static final String TAG = "InGameActivity";
+    public static final String TAG = "HostInGameActivity";
     public Player player;
     private int inputVar;
     private double gasPrice;
@@ -41,7 +41,7 @@ public class InGameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_in_game);
+        setContentView(R.layout.activity_host_in_game);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -52,8 +52,8 @@ public class InGameActivity extends AppCompatActivity {
         playerName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(InGameActivity.this).create();
-                final EditText input = new EditText(InGameActivity.this);
+                final AlertDialog nameInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final EditText input = new EditText(HostInGameActivity.this);
                 nameInput.setTitle("Change Player Name");
                 nameInput.setMessage("Please Choose a Nickname:");
                 nameInput.setView(input);
@@ -189,8 +189,8 @@ public class InGameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!numberInput.getText().toString().isEmpty()) {
                     gasPrice = Double.parseDouble(numberInput.getText().toString());
-                    final AlertDialog hayBaleInput = new AlertDialog.Builder(InGameActivity.this).create();
-                    final EditText input = new EditText(InGameActivity.this);
+                    final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                    final EditText input = new EditText(HostInGameActivity.this);
                     hayBaleInput.setTitle("User input required");
                     hayBaleInput.setMessage("How many hay bales do you want to use?");
                     hayBaleInput.setView(input);
@@ -289,8 +289,8 @@ public class InGameActivity extends AppCompatActivity {
         waterTowerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog hayBaleInput = new AlertDialog.Builder(InGameActivity.this).create();
-                final EditText input = new EditText(InGameActivity.this);
+                final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final EditText input = new EditText(HostInGameActivity.this);
                 hayBaleInput.setTitle("User input required");
                 hayBaleInput.setMessage("How many horses do you want to convert?");
                 hayBaleInput.setView(input);

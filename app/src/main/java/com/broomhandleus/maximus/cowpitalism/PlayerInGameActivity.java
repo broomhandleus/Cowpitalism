@@ -101,6 +101,17 @@ public class PlayerInGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
+        // General Bluetooth accessibility
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Bluetooth non-existent!");
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
         executor = Executors.newSingleThreadExecutor();
 
         // Joining the game
@@ -158,17 +169,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
             Log.d(TAG, "Started DISCOVERING!!!");
         else
             Log.e(TAG, "Failed to start Discovering!!!");
-
-        // General Bluetooth accessibility
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Bluetooth non-existent!");
-        }
-
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
@@ -705,7 +705,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
             mBluetoothAdapter.cancelDiscovery();
-
 
             try {
                 // Open up a RFCOMM channel using the provided UUID

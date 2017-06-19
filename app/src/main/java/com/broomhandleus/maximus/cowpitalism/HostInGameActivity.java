@@ -215,12 +215,6 @@ public class HostInGameActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         registerReceiver(discoverableReceiver, filter);
 
-
-
-
-
-
-
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
         playerName.setOnClickListener(new View.OnClickListener() {

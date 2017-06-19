@@ -75,6 +75,7 @@ public class HostInGameActivity extends AppCompatActivity {
     private TextView tankerCount;
     private TextView semiCount;
     private TextView hayBaleCount;
+    private Button startButton;
 
     private Chronometer gameTimer;
 
@@ -113,28 +114,39 @@ public class HostInGameActivity extends AppCompatActivity {
         }
 
 
-        // Making the host device discoverable
-        Log.d(TAG, "Now discoverable for the next 30 seconds!");
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
-        startActivity(discoverableIntent);
 
-        /**
-         * Since this device is now going to be the host, we will start accepting incoming
-         * connections from potential players, we will start a background thread listening
-         * for those incoming connections on the first UUID's channel.
-         *
-         * Once the host is done letting people try to join, this AcceptThread will be
-         * canceled/closed somehow. Then each approved player, will receive a message
-         * containing their channelUUID (one of the seven available).
-         *
-         * e.g. MY_UUIDS[0] will no longer be receiving join requests from people,
-         * but rather it will be assigned to communicate with one specific player.
-         * TODO: Make sure the individual AcceptThreads for each device checks the mac
-         * TODO: address of incoming messages to make sure their from the only perm. device.
-         */
-        hostAcceptThreads[0] = new AcceptThread(0);
-        hostAcceptThreads[0].start();
+
+
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Making the host device discoverable
+                Log.d(TAG, "Now discoverable for the next 30 seconds!");
+                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
+                startActivity(discoverableIntent);
+
+                /**
+                 * Since this device is now going to be the host, we will start accepting incoming
+                 * connections from potential players, we will start a background thread listening
+                 * for those incoming connections on the first UUID's channel.
+                 *
+                 * Once the host is done letting people try to join, this AcceptThread will be
+                 * canceled/closed somehow. Then each approved player, will receive a message
+                 * containing their channelUUID (one of the seven available).
+                 *
+                 * e.g. MY_UUIDS[0] will no longer be receiving join requests from people,
+                 * but rather it will be assigned to communicate with one specific player.
+                 * TODO: Make sure the individual AcceptThreads for each device checks the mac
+                 * TODO: address of incoming messages to make sure their from the only perm. device.
+                 */
+                hostAcceptThreads[0] = new AcceptThread(0);
+                hostAcceptThreads[0].start();
+            }
+        });
+
+
+
 
         Button approveButton = (Button) findViewById(R.id.approveButton);
         approveButton.setOnClickListener(new View.OnClickListener() {

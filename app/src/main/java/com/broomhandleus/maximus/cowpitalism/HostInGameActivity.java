@@ -2,6 +2,7 @@ package com.broomhandleus.maximus.cowpitalism;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,6 +42,7 @@ public class HostInGameActivity extends AppCompatActivity {
     private double moreMoney;
 
     // Bluetooth declarations
+    public static final String SERVICE_NAME = "Cowpitalism";
     public static final UUID[] MY_UUIDS = {
             UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
             UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
@@ -53,6 +55,9 @@ public class HostInGameActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 23;
     public static final int MAX_DEVICES = 7;
+
+    private BluetoothAdapter mBluetoothAdapter;
+    private volatile boolean discoverable;
 
     // Device-Related Lists
     private List<BluetoothDevice> potentialPlayers;
@@ -201,41 +206,9 @@ public class HostInGameActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        /**
-         * BroadcastReceiver that sets our "discoverable" variable correctly every time the phone's
-         * discoverable state changes. This will be used by the game host.
-         */
-        private BroadcastReceiver discoverableReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if(action.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
-                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.SCAN_MODE_NONE)
-                            == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                        discoverable = true;
-                        Log.d(TAG, "We are now discoverable!");
-                        Thread discoverableThread = new Thread() {
-                            public void run() {
-                                try {
-                                    Thread.sleep(30000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                discoverable = false;
-                                Log.d(TAG, "We are no longer discoverable!");
-                            }
-                        };
-                        discoverableThread.start();
-                    }
-                }
-            }
-        };
 
-        @Override
-        protected void onDestroy() {
-            super.onDestroy();
-            unregisterReceiver(discoverableReceiver);
-        }
+
+
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
@@ -309,6 +282,11 @@ public class HostInGameActivity extends AppCompatActivity {
                         nameInput.dismiss();
                     }
                 });
+
+
+
+
+
         nameInput.show();
 
 
@@ -527,6 +505,42 @@ public class HostInGameActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * BroadcastReceiver that sets our "discoverable" variable correctly every time the phone's
+     * discoverable state changes. This will be used by the game host.
+     */
+    private BroadcastReceiver discoverableReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.SCAN_MODE_NONE)
+                        == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                    discoverable = true;
+                    Log.d(TAG, "We are now discoverable!");
+                    Thread discoverableThread = new Thread() {
+                        public void run() {
+                            try {
+                                Thread.sleep(30000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            discoverable = false;
+                            Log.d(TAG, "We are no longer discoverable!");
+                        }
+                    };
+                    discoverableThread.start();
+                }
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(discoverableReceiver);
     }
 
     // Private Class for keeping track of player data

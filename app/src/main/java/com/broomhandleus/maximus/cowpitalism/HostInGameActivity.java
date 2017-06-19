@@ -113,9 +113,6 @@ public class HostInGameActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-
-
-
         startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,9 +141,6 @@ public class HostInGameActivity extends AppCompatActivity {
                 hostAcceptThreads[0].start();
             }
         });
-
-
-
 
         Button approveButton = (Button) findViewById(R.id.approveButton);
         approveButton.setOnClickListener(new View.OnClickListener() {

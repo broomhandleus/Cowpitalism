@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
         joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Join Game Clicked.");
+                Intent screenSwitch = new Intent(getApplication(), PlayerInGameActivity.class);
+                startActivity(screenSwitch);
             }
         });
 

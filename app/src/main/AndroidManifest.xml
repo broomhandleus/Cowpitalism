@@ -44,7 +44,11 @@
         <activity
             android:name=".PlayerInGameActivity"
             android:label="@string/title_activity_player_in_game"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.broomhandleus.maximus.cowpitalism.MainActivity" />
     </application>
 
 </manifest>

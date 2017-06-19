@@ -1,5 +1,6 @@
 package com.broomhandleus.maximus.cowpitalism;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -15,6 +16,9 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.util.List;
+import java.util.UUID;
+
 public class PlayerInGameActivity extends AppCompatActivity {
 
     public static final String TAG = "PlayerInGameActivity";
@@ -22,6 +26,26 @@ public class PlayerInGameActivity extends AppCompatActivity {
     private int inputVar;
     private double gasPrice;
     private double moreMoney;
+
+    // Bluetooth declarations
+    public static final UUID[] MY_UUIDS = {
+            UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
+            UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
+            UUID.fromString("ebb1690b-5b07-450f-b915-4d41698b199d"),
+            UUID.fromString("dc1d38dd-222d-4c9c-aa0c-a9f0cd1dfcb6"),
+            UUID.fromString("8c864b60-b369-44fa-85ff-86111fd4ff33"),
+            UUID.fromString("f7b45c10-7602-487c-9bba-5a2be3ddfff4"),
+            UUID.fromString("e89f9548-492b-4bcd-824d-cc80d204f47b")
+    };
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 23;
+    public static final int MAX_DEVICES = 7;
+
+    // Device Related Declarations
+    private List<BluetoothDevice> potentialHosts;
+    private BluetoothDevice hostDevice;
+    private AcceptThread playerAcceptThread;
+    private CustomArrayAdapter hostsAdapter;
 
     // Declarations
     private TextView playerName;
@@ -46,6 +70,63 @@ public class PlayerInGameActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
+
+        // Joining the game
+        hostDevice = null;
+        // Create ArrayList to contain the devices found (potential game hosts)
+        potentialHosts = new ArrayList<>();
+        hostsAdapter = new CustomArrayAdapter(getApplicationContext(), potentialHosts);
+
+        // Create Dialog that displays the constantly-updating list of devices found
+        AlertDialog.Builder builder = new AlertDialog.Builder(BluetoothActivity.this);
+        builder.setTitle("Select Game Host");
+        ListView listView = new ListView(BluetoothActivity.this);
+        listView.setAdapter(hostsAdapter);
+        builder.setView(listView);
+        final Dialog dialog = builder.create();
+        dialog.show();
+
+        // Setup what happens when we select our game host from the list
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hostDevice = potentialHosts.get(position);
+                Log.d(TAG, "Game host will be: " + hostDevice);
+                dialog.dismiss();
+
+                /**
+                 * Start temporary Background Thread that receives the first incoming message
+                 * from the host. It will contain the channelUUID. At that point,
+                 * this AcceptThread will cancel itself, and start a new permanent one with
+                 * the correct channelUUID rather than the default one(0).
+                 */
+                playerAcceptThread = new AcceptThread(0);
+                Log.v(TAG, "Starting default playerAcceptThread: " + playerAcceptThread);
+                playerAcceptThread.start();
+
+                BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
+                SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, MY_UUIDS[0], joinMessage);
+                executorsList[0].submit(sendMessageRunnable);
+            }
+        });
+
+        // Make it so that we are notified when a new nearby BluetoothDevice is discovered
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(discoverDevicesReceiver, filter);
+
+        // Request permission to search for nearby devices
+        Log.d(TAG, "Attempting to discover nearby devices....");
+        ActivityCompat.requestPermissions(BluetoothActivity.this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+        // Begin searching for nearby
+        boolean success = mBluetoothAdapter.startDiscovery();
+        if (success)
+            Log.d(TAG, "Started DISCOVERING!!!");
+        else
+            Log.e(TAG, "Failed to start Discovering!!!");
+        
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);

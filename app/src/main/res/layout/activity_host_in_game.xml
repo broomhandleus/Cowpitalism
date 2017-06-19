@@ -394,5 +394,18 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintHorizontal_bias="0.166" />
 
+    <Button
+        android:id="@+id/approveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Approve"
+        app:layout_constraintLeft_toRightOf="@+id/titleName"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="78dp"
+        app:layout_constraintBottom_toTopOf="@+id/barnCount"
+        app:layout_constraintHorizontal_bias="0.619" />
+
 
 </android.support.constraint.ConstraintLayout>

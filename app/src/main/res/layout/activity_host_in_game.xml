@@ -403,9 +403,19 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="78dp"
-        app:layout_constraintBottom_toTopOf="@+id/barnCount"
-        app:layout_constraintHorizontal_bias="0.619" />
+        app:layout_constraintHorizontal_bias="0.6"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="56dp" />
+
+    <Button
+        android:id="@+id/pingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Button"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/approveButton" />
 
 
 </android.support.constraint.ConstraintLayout>

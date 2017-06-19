@@ -274,7 +274,6 @@ public class BluetoothActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         registerReceiver(discoverableReceiver, filter);
 
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Log.e(TAG, "Bluetooth non-existent!");
@@ -314,7 +313,6 @@ public class BluetoothActivity extends AppCompatActivity {
         unregisterReceiver(discoverableReceiver);
     }
 
-
     /**
      * BroadcastReceiver that sets our "discoverable" variable correctly every time the phone's
      * discoverable state changes. This will be used by the game host.
@@ -341,9 +339,6 @@ public class BluetoothActivity extends AppCompatActivity {
                     };
                     discoverableThread.start();
                 }
-//                else {
-//                    discoverable = false;
-//                }
             }
         }
     };

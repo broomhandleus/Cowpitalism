@@ -2,9 +2,12 @@ package com.broomhandleus.maximus.cowpitalism;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +21,11 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -152,6 +160,82 @@ public class HostInGameActivity extends AppCompatActivity {
                 Log.d(TAG, "-----------------------");
             }
         });
+
+        Button pingButton = (Button) findViewById(R.id.pingButton);
+        pingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Pinging the clients!!!");
+                Log.d(TAG, "----------------------");
+                // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
+                for (int i = 0; i < MAX_DEVICES; i++) {
+                    // .....because we don't associate ourselves with those null BluetoothDevice's.
+                    if (playersList[i] == null) {
+                        continue;
+                    }
+
+                    if (playersList[i].getName() != null) {
+                        Log.d(TAG, "Pinging " + playersList[i].getName());
+                    } else {
+                        Log.d(TAG, "Pinging " + playersList[i].getAddress());
+                    }
+                    BluetoothMessage pingMessage = new BluetoothMessage(BluetoothMessage.Type.PING_CLIENT, 0, "");
+                    SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[i],pingMessage);
+                    executorsList[i].submit(sendMessageRunnable);
+                }
+            }
+        });
+
+        // Making Discoverable
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        registerReceiver(discoverableReceiver, filter);
+
+        // General Bluetooth accessibility
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Bluetooth non-existent!");
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+        /**
+         * BroadcastReceiver that sets our "discoverable" variable correctly every time the phone's
+         * discoverable state changes. This will be used by the game host.
+         */
+        private BroadcastReceiver discoverableReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if(action.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
+                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.SCAN_MODE_NONE)
+                            == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                        discoverable = true;
+                        Log.d(TAG, "We are now discoverable!");
+                        Thread discoverableThread = new Thread() {
+                            public void run() {
+                                try {
+                                    Thread.sleep(30000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                discoverable = false;
+                                Log.d(TAG, "We are no longer discoverable!");
+                            }
+                        };
+                        discoverableThread.start();
+                    }
+                }
+            }
+        };
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            unregisterReceiver(discoverableReceiver);
+        }
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
@@ -472,6 +556,294 @@ public class HostInGameActivity extends AppCompatActivity {
 
             // everyone should have a kitty... or 5
             kitties = (int) (5 * Math.random());
+        }
+    }
+
+    /**
+     * AcceptThread can is used in BOTH the Host and the players.
+     * It will receive all incoming messages from the device
+     * corresponding to the given playerIdx.
+     */
+    private class AcceptThread extends Thread {
+        private int playerIdx;
+        private BluetoothServerSocket serverSocket;
+        private volatile boolean canceled;
+
+        public AcceptThread(int playerIdx) {
+            this.playerIdx = playerIdx;
+            this.canceled = false;
+            try {
+                // Open an RFCOMM channel with the channelUUID corresponding to the player.
+                serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, MY_UUIDS[playerIdx]);
+            } catch (IOException e) {
+                Log.e(TAG, "Socket's listen() method failed", e);
+            }
+        }
+        public void run() {
+
+            BluetoothSocket socket = null;
+            while (true) {
+                try {
+                    Log.v(TAG, "Now waiting to receive a message!");
+                    socket = serverSocket.accept();
+                    Log.v(TAG, "Exited accept!");
+                } catch (IOException e) {
+                    if (!canceled) {
+                        Log.e(TAG, "Socket's accept() method failed: " + this);
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+
+                if (socket != null) {
+                    // If I am a player, and this communication is not from the host, then ignore
+                    if (!isHost) {
+                        if (hostDevice == null) {
+                            /**
+                             * If I am a player than hasn't selected a host yet, I shouldn't
+                             * receive anything
+                             */
+                            return;
+                        } else if (!hostDevice.equals(socket.getRemoteDevice())) {
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return;
+                        }
+                    } else {
+                        /**
+                         * TODO: Check if the device corresponds to the player that should be
+                         * TODO:    communicating with me at this UUID.
+                         * TODO:    e.g. socket.getRemoteDevice().equals(playerList[playerIdx])
+                         */
+                    }
+
+                    // A connection was accepted
+                    Log.v(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
+                    ReceiveMessageRunnable receiveMessageRunnable = new ReceiveMessageRunnable(playerIdx, socket);
+                    executorsList[playerIdx].submit(receiveMessageRunnable);
+                    // TODO: Is this next line REALLY necessary? Remove and test without
+                    // TODO:    only once everything is in decent working order.
+                    socket = null;
+                }
+            }
+        }
+
+        // Closes the connect socket and causes the thread to finish.
+        public void cancel() {
+            try {
+                Log.v(TAG, "Canceled accept thread on idx: " + playerIdx + "!");
+                canceled = true;
+                serverSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the connect socket", e);
+            }
+        }
+    }
+
+    /**
+     *
+     * A runnable that handles that receives a single msg, ACKs it, then acts upon the msg.
+     *
+     */
+    private class ReceiveMessageRunnable implements Runnable {
+        private int playerIdx;
+        private BluetoothSocket socket;
+        public ReceiveMessageRunnable(int playerIdx, BluetoothSocket socket) {
+            this.playerIdx = playerIdx;
+            this.socket = socket;
+        }
+
+        public void run() {
+            try {
+                Log.v(TAG, "connected: " + socket.isConnected());
+                // Open communication streams to receive message and sent ACK
+                ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                BluetoothMessage inMessage = (BluetoothMessage) messageInputStream.readObject();
+
+                // Sent ACK
+                BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.ACK,0,"ACK-" + inMessage.id);
+                Log.v(TAG, "Sending ACK!!");
+                messageOutputStream.writeObject(ackMessage);
+
+                try {
+                    messageInputStream.read();
+                } catch (Exception ex) {
+                    Log.v(TAG, "ACK should've been recv'd....remote seems closed...closing");
+                }
+
+                socket.close();
+
+                //
+                /**
+                 * Act accordingly depending on the type of message just received.
+                 * All the logic for different kinds of messages goes here.
+                 */
+                if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
+                        && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
+                    if (discoverable) {
+                        Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
+                        if (!potentialPlayers.contains(socket.getRemoteDevice())) {
+                            potentialPlayers.add(socket.getRemoteDevice());
+                        }
+                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
+                    } else {
+                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
+
+                    }
+
+                } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
+                    Log.d(TAG, "I have been accepted to join game!. I am player: " + inMessage.value);
+                    // Cancel playerAcceptThread on the default channel (0) and start on correct one
+                    playerAcceptThread.cancel();
+                    playerAcceptThread = new AcceptThread(inMessage.value);
+                    Log.v(TAG, "Starting REAL playerAcceptThread: " + playerAcceptThread);
+                    playerAcceptThread.start();
+                } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
+                    Log.d(TAG,"I HAVE BEEN PINGED!!!");
+                } else {
+                    Log.e(TAG, "Some other kind of message has arrived!");
+                }
+
+            } catch (StreamCorruptedException e) {
+                e.printStackTrace();
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * SendMessageRunnable sends, a message, and waits for an ACK.
+     */
+    private class SendMessageRunnable implements Runnable {
+        private BluetoothDevice device;
+        private UUID channelUUID;
+        private BluetoothMessage message;
+        // Not set until run()
+        private BluetoothSocket socket;
+
+        public SendMessageRunnable(BluetoothDevice device, UUID channelUUID, BluetoothMessage message) {
+            this.device = device;
+            this.channelUUID = channelUUID;
+            this.message = message;
+        }
+
+        public void run() {
+            // Cancel discovery because it otherwise slows down the connection.
+            mBluetoothAdapter.cancelDiscovery();
+
+
+            try {
+                // Open up a RFCOMM channel using the provided UUID
+                socket = device.createRfcommSocketToServiceRecord(channelUUID);
+                socket.connect();
+                Log.v(TAG, "Correctly Connected on " + channelUUID);
+
+                // Open bi-directional communication streams on the channel
+                ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
+
+                // Actually send the message
+                messageOutputStream.writeObject(message);
+                messageOutputStream.flush();
+                Log.v(TAG, "Correctly Sent a message");
+
+                // Attempt to receive ACK message
+                // TODO: Has the potential to block forever if ack never arrives
+                BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
+                if (potentialAck.type == BluetoothMessage.Type.ACK
+                        && potentialAck.body.equals("ACK-" + message.id)) {
+                    Log.v(TAG, "Received CORRECT ACK");
+                    messageOutputStream.close();
+                    messageInputStream.close();
+                    socket.close();
+                } else {
+                    Log.e(TAG, "Incorrect ACK!!!");
+                    Log.e(TAG, "Seeking: ACK-" + message.id + ", Found: " + potentialAck.body);
+                    messageOutputStream.close();
+                    messageInputStream.close();
+                    socket.close();
+                }
+            } catch (IOException e) {
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                e.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+        }
+
+        // Closes the client socket and causes the thread to finish.
+        public void cancel() {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the client socket", e);
+            }
+        }
+    }
+
+    /**
+     * Class defining a single message sent over a bluetooth connection.
+     *
+     * type - The type of the message.
+     * value - A number being sent in the message.
+     * body - A string beng sent in the message.
+     *
+     * Upon connecting to the game-hosting device, the first thing a player
+     *  should do is send a message with type=Type.JOIN_REQUEST and value=JOIN_REQUEST_VALUE.
+     *  This will allow the game-host to verify that the player is in fact running Cowpitalism
+     *
+     */
+    private static class BluetoothMessage implements Serializable {
+        public static final int JOIN_REQUEST_VALUE = 12345;
+        private enum Type {
+            ACK,
+            PING_CLIENT,
+            JOIN_REQUEST,
+            JOIN_RESPONSE
+        }
+
+        public Type type;
+        public int value;
+        public String body;
+        public UUID id;
+
+        public BluetoothMessage(Type type, int value, String body) {
+            this.type = type;
+            this.value = value;
+            this.body = body;
+            this.id = UUID.randomUUID();
+        }
+    }
+
+    /**
+     * A helper method that helps us print out the best name for a device.
+     * @param device the BluetoothDevice that is being referenced
+     * @return the device's Name if it has one, otherwise its mac address.
+     */
+    private static String deviceName(BluetoothDevice device) {
+        if (device.getName() == null) {
+            return device.getAddress();
+        } else {
+            return device.getName();
         }
     }
 }

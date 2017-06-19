@@ -99,6 +99,20 @@ public class HostInGameActivity extends AppCompatActivity {
         potentialPlayers = new ArrayList<>();
 
 
+        // General Bluetooth accessibility
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Bluetooth non-existent!");
+        } else {
+            Log.d(TAG, "We have an adapter!");
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+
         // Making the host device discoverable
         Log.d(TAG, "Now discoverable for the next 30 seconds!");
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
@@ -195,16 +209,7 @@ public class HostInGameActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         registerReceiver(discoverableReceiver, filter);
 
-        // General Bluetooth accessibility
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Bluetooth non-existent!");
-        }
 
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
 
 
 
@@ -588,6 +593,7 @@ public class HostInGameActivity extends AppCompatActivity {
             this.canceled = false;
             try {
                 // Open an RFCOMM channel with the channelUUID corresponding to the player.
+                Log.d(TAG, "adapter: " + mBluetoothAdapter);
                 serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, MY_UUIDS[playerIdx]);
             } catch (IOException e) {
                 Log.e(TAG, "Socket's listen() method failed", e);

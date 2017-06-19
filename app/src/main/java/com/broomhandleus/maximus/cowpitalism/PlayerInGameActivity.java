@@ -39,6 +39,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.broomhandleus.maximus.cowpitalism.BluetoothActivity.SERVICE_NAME;
 
@@ -70,6 +73,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
     private AcceptThread playerAcceptThread;
     private CustomArrayAdapter hostsAdapter;
 
+    private BluetoothAdapter mBluetoothAdapter;
+
     // Declarations
     private TextView playerName;
     private TextView cowCount;
@@ -85,6 +90,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
 
     private EditText numberInput;
 
+    private ExecutorService executor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +101,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
+        executor = Executors.newSingleThreadExecutor();
+
         // Joining the game
         hostDevice = null;
         // Create ArrayList to contain the devices found (potential game hosts)
@@ -101,9 +110,9 @@ public class PlayerInGameActivity extends AppCompatActivity {
         hostsAdapter = new CustomArrayAdapter(getApplicationContext(), potentialHosts);
 
         // Create Dialog that displays the constantly-updating list of devices found
-        AlertDialog.Builder builder = new AlertDialog.Builder(BluetoothActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(PlayerInGameActivity.this);
         builder.setTitle("Select Game Host");
-        ListView listView = new ListView(BluetoothActivity.this);
+        ListView listView = new ListView(PlayerInGameActivity.this);
         listView.setAdapter(hostsAdapter);
         builder.setView(listView);
         final Dialog dialog = builder.create();
@@ -129,7 +138,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
 
                 BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_REQUEST, BluetoothMessage.JOIN_REQUEST_VALUE, "");
                 SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, MY_UUIDS[0], joinMessage);
-                executorsList[0].submit(sendMessageRunnable);
+                executor.submit(sendMessageRunnable);
             }
         });
 
@@ -140,7 +149,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
 
         // Request permission to search for nearby devices
         Log.d(TAG, "Attempting to discover nearby devices....");
-        ActivityCompat.requestPermissions(BluetoothActivity.this,
+        ActivityCompat.requestPermissions(PlayerInGameActivity.this,
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                 MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
         // Begin searching for nearby
@@ -160,60 +169,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-
-        /**
-         * Checks to see whether we got permission from the user to use location services.
-         * @param requestCode
-         * @param permissions
-         * @param grantResults
-         */
-        @Override
-        public void onRequestPermissionsResult(int requestCode,
-        String permissions[], int[] grantResults) {
-            if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.v(TAG, "PERMISSION GRANTED BY USER!!!");
-                } else {
-                    Log.e(TAG, "PERMISSIONS DENIED BY USER!!!");
-                    System.exit(-1);
-                }
-            }
-        }
-
-        /**
-         * BroadcastReceiver that handles searching for nearby game hosts and adds them to the list.
-         */
-        private BroadcastReceiver discoverDevicesReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if(action.equals(BluetoothDevice.ACTION_FOUND)) {
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    Log.d(TAG, "Device Found: " + device.getName() + ": " + device.getAddress());
-                    if (!potentialHosts.contains(device)) {
-                        potentialHosts.add(device);
-                        hostsAdapter.notifyDataSetChanged();
-                    }
-                } else if(action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
-                    Log.d(TAG, "Finished Discovering");
-                    if (potentialHosts.size() != 0) {
-                        Log.d(TAG, "Potential Hosts:");
-                        Log.d(TAG, "--------------");
-                        for (int i = 0; i < potentialHosts.size(); i++) {
-                            Log.d(TAG, "Device-" + (i + 1) + ": " + potentialHosts.get(i).getName() + " -> " + potentialHosts.get(i).getAddress());
-                        }
-                        Log.d(TAG, "--------------");
-                    } else {
-                        Log.e(TAG, "No potential hosts found!!!");
-                    }
-                    unregisterReceiver(discoverDevicesReceiver);
-                } else {
-                    Log.e(TAG, "Unknown type of action received!");
-                }
-            }
-        };
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
@@ -507,6 +462,60 @@ public class PlayerInGameActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * BroadcastReceiver that handles searching for nearby game hosts and adds them to the list.
+     */
+    private BroadcastReceiver discoverDevicesReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BluetoothDevice.ACTION_FOUND)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.d(TAG, "Device Found: " + device.getName() + ": " + device.getAddress());
+                if (!potentialHosts.contains(device)) {
+                    potentialHosts.add(device);
+                    hostsAdapter.notifyDataSetChanged();
+                }
+            } else if(action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+                Log.d(TAG, "Finished Discovering");
+                if (potentialHosts.size() != 0) {
+                    Log.d(TAG, "Potential Hosts:");
+                    Log.d(TAG, "--------------");
+                    for (int i = 0; i < potentialHosts.size(); i++) {
+                        Log.d(TAG, "Device-" + (i + 1) + ": " + potentialHosts.get(i).getName() + " -> " + potentialHosts.get(i).getAddress());
+                    }
+                    Log.d(TAG, "--------------");
+                } else {
+                    Log.e(TAG, "No potential hosts found!!!");
+                }
+                unregisterReceiver(discoverDevicesReceiver);
+            } else {
+                Log.e(TAG, "Unknown type of action received!");
+            }
+        }
+    };
+
+    /**
+     * Checks to see whether we got permission from the user to use location services.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG, "PERMISSION GRANTED BY USER!!!");
+            } else {
+                Log.e(TAG, "PERMISSIONS DENIED BY USER!!!");
+                System.exit(-1);
+            }
+        }
+    }
+
     // Private Class for keeping track of player data
     private class Player {
 
@@ -574,34 +583,26 @@ public class PlayerInGameActivity extends AppCompatActivity {
                 }
 
                 if (socket != null) {
-                    // If I am a player, and this communication is not from the host, then ignore
-                    if (!isHost) {
-                        if (hostDevice == null) {
-                            /**
-                             * If I am a player than hasn't selected a host yet, I shouldn't
-                             * receive anything
-                             */
-                            return;
-                        } else if (!hostDevice.equals(socket.getRemoteDevice())) {
-                            try {
-                                socket.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            return;
-                        }
-                    } else {
+                    // If this communication is not from the host, then ignore
+                    if (hostDevice == null) {
                         /**
-                         * TODO: Check if the device corresponds to the player that should be
-                         * TODO:    communicating with me at this UUID.
-                         * TODO:    e.g. socket.getRemoteDevice().equals(playerList[playerIdx])
+                         * If I am a player than hasn't selected a host yet, I shouldn't
+                         * receive anything
                          */
+                        return;
+                    } else if (!hostDevice.equals(socket.getRemoteDevice())) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return;
                     }
 
                     // A connection was accepted
                     Log.v(TAG, "Correctly Accepted Connection on " + MY_UUIDS[playerIdx]);
                     ReceiveMessageRunnable receiveMessageRunnable = new ReceiveMessageRunnable(playerIdx, socket);
-                    executorsList[playerIdx].submit(receiveMessageRunnable);
+                    executor.submit(receiveMessageRunnable);
                     // TODO: Is this next line REALLY necessary? Remove and test without
                     // TODO:    only once everything is in decent working order.
                     socket = null;
@@ -660,20 +661,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
                  * Act accordingly depending on the type of message just received.
                  * All the logic for different kinds of messages goes here.
                  */
-                if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
-                        && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
-                    if (discoverable) {
-                        Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
-                        if (!potentialPlayers.contains(socket.getRemoteDevice())) {
-                            potentialPlayers.add(socket.getRemoteDevice());
-                        }
-                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
-                    } else {
-                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
-
-                    }
-
-                } else if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
+                if (inMessage.type == BluetoothMessage.Type.JOIN_RESPONSE) {
                     Log.d(TAG, "I have been accepted to join game!. I am player: " + inMessage.value);
                     // Cancel playerAcceptThread on the default channel (0) and start on correct one
                     playerAcceptThread.cancel();
@@ -686,8 +674,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
                     Log.e(TAG, "Some other kind of message has arrived!");
                 }
 
-            } catch (StreamCorruptedException e) {
-                e.printStackTrace();
             } catch (SecurityException e) {
                 e.printStackTrace();
             } catch (NullPointerException e) {

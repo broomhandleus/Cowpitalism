@@ -671,8 +671,11 @@ public class HostInGameActivity extends AppCompatActivity {
                 // Open communication streams to receive message and sent ACK
                 ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                Log.v(TAG, "1");
                 BluetoothMessage inMessage = (BluetoothMessage) messageInputStream.readObject();
+                Log.v(TAG, "2");
 
+                Log.v(TAG, "Pulled in message");
                 // Sent ACK
                 BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.ACK,0,"ACK-" + inMessage.id);
                 Log.v(TAG, "Sending ACK!!");

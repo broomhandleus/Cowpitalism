@@ -665,9 +665,7 @@ public class HostInGameActivity extends AppCompatActivity {
                 // Open communication streams to receive message and sent ACK
                 ObjectInputStream messageInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream messageOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                Log.v(TAG, "1");
                 BluetoothMessage inMessage = (BluetoothMessage) messageInputStream.readObject();
-                Log.v(TAG, "2");
 
                 Log.v(TAG, "Pulled in message");
                 // Sent ACK
@@ -798,39 +796,7 @@ public class HostInGameActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Class defining a single message sent over a bluetooth connection.
-     *
-     * type - The type of the message.
-     * value - A number being sent in the message.
-     * body - A string beng sent in the message.
-     *
-     * Upon connecting to the game-hosting device, the first thing a player
-     *  should do is send a message with type=Type.JOIN_REQUEST and value=JOIN_REQUEST_VALUE.
-     *  This will allow the game-host to verify that the player is in fact running Cowpitalism
-     *
-     */
-    private static class BluetoothMessage implements Serializable {
-        public static final int JOIN_REQUEST_VALUE = 12345;
-        private enum Type {
-            ACK,
-            PING_CLIENT,
-            JOIN_REQUEST,
-            JOIN_RESPONSE
-        }
 
-        public Type type;
-        public int value;
-        public String body;
-        public UUID id;
-
-        public BluetoothMessage(Type type, int value, String body) {
-            this.type = type;
-            this.value = value;
-            this.body = body;
-            this.id = UUID.randomUUID();
-        }
-    }
 
     /**
      * A helper method that helps us print out the best name for a device.

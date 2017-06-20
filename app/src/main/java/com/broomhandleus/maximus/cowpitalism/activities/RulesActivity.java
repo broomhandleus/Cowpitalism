@@ -1,8 +1,10 @@
-package com.broomhandleus.maximus.cowpitalism;
+package com.broomhandleus.maximus.cowpitalism.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+
+import com.broomhandleus.maximus.cowpitalism.R;
 
 public class RulesActivity extends AppCompatActivity {
 

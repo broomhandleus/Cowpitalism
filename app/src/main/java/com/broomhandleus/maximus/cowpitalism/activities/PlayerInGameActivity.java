@@ -1,4 +1,4 @@
-package com.broomhandleus.maximus.cowpitalism;
+package com.broomhandleus.maximus.cowpitalism.activities;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -32,28 +32,27 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.broomhandleus.maximus.cowpitalism.R;
+import com.broomhandleus.maximus.cowpitalism.types.BluetoothMessage;
+import com.broomhandleus.maximus.cowpitalism.types.Player;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.broomhandleus.maximus.cowpitalism.BluetoothActivity.SERVICE_NAME;
 
 public class PlayerInGameActivity extends AppCompatActivity {
 
+    // Static Final Values
     public static final String TAG = "PlayerInGameActivity";
-    public Player player;
-    private int inputVar;
-    private double gasPrice;
-    private double moreMoney;
-
-    // Bluetooth declarations
+    public static final String SERVICE_NAME = "Cowpitalism";
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 23;
     public static final UUID[] MY_UUIDS = {
             UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
             UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
@@ -63,19 +62,16 @@ public class PlayerInGameActivity extends AppCompatActivity {
             UUID.fromString("f7b45c10-7602-487c-9bba-5a2be3ddfff4"),
             UUID.fromString("e89f9548-492b-4bcd-824d-cc80d204f47b")
     };
-    private static final int REQUEST_ENABLE_BT = 1;
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 23;
-    public static final int MAX_DEVICES = 7;
 
-    // Device Related Declarations
+    // Bluetooth-Related
+    private BluetoothAdapter mBluetoothAdapter;
     private List<BluetoothDevice> potentialHosts;
     private BluetoothDevice hostDevice;
     private AcceptThread playerAcceptThread;
     private CustomArrayAdapter hostsAdapter;
+    private ExecutorService executor;
 
-    private BluetoothAdapter mBluetoothAdapter;
-
-    // Declarations
+    // View Elements
     private TextView playerName;
     private TextView cowCount;
     private TextView milkCount;
@@ -85,12 +81,14 @@ public class PlayerInGameActivity extends AppCompatActivity {
     private TextView tankerCount;
     private TextView semiCount;
     private TextView hayBaleCount;
-
-    private Chronometer gameTimer;
-
     private EditText numberInput;
 
-    private ExecutorService executor;
+    // Local Variables
+    private Player player;
+    private int inputVar;
+    private double gasPrice;
+    private double moreMoney;
+    private Chronometer gameTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -516,35 +514,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
         }
     }
 
-    // Private Class for keeping track of player data
-    private class Player {
-
-        public String name;
-        public int cows;
-        public int milk;
-        public int horses;
-        public double money;
-        public int hayBales;
-        public int semis;
-        public int tankers;
-        public int barns;
-        private int kitties;
-
-        public Player(String newName) {
-            name = newName;
-            cows = 0;
-            milk = 0;
-            horses = 0;
-            money = 0;
-            hayBales = 0;
-            semis = 0;
-            tankers = 0;
-            barns = 0;
-
-            // everyone should have a kitty... or 5
-            kitties = (int) (5 * Math.random());
-        }
-    }
 
     /**
      * AcceptThread can is used in BOTH the Host and the players.

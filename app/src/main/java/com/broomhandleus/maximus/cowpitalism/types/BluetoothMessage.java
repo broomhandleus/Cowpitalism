@@ -1,4 +1,4 @@
-package com.broomhandleus.maximus.cowpitalism;
+package com.broomhandleus.maximus.cowpitalism.types;
 
 import java.io.Serializable;
 import java.util.UUID;

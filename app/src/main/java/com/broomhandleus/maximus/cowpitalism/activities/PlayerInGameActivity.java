@@ -99,6 +99,13 @@ public class PlayerInGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
+        Bundle extras = getIntent().getExtras();
+        if (extras == null) {
+            Log.d(TAG, "Yo, something went wrong with getting the player name.");
+        } else {
+            player = new Player(extras.getString("PLAYER_NAME"));
+        }
+
         // General Bluetooth accessibility
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -168,8 +175,26 @@ public class PlayerInGameActivity extends AppCompatActivity {
         else
             Log.e(TAG, "Failed to start Discovering!!!");
 
+        // Game Timer
+        gameTimer = (Chronometer) findViewById(R.id.chronometer);
+        gameTimer.start();
+        gameTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                if (gameTimer.getText().toString().substring(gameTimer.length() - 2).equals("00")) {
+                    if ((player.milk + player.cows) < ((player.cows * 25) + (player.tankers * 1000))) {
+                        player.milk += player.cows;
+                    } else {
+                        player.milk = (player.cows * 25) + (player.tankers * 1000);
+                    }
+                    milkCount.setText("Milk: " + player.milk + " gallons");
+                }
+            }
+        });
+
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
+        playerName.setText(player.name.toUpperCase());
         playerName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -206,42 +231,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
         semiCount = (TextView) findViewById(R.id.semiCount);
         hayBaleCount = (TextView) findViewById(R.id.hayBaleCount);
 
-        // Game Timer
-        gameTimer = (Chronometer) findViewById(R.id.chronometer);
-
         // Number Input
         numberInput = (EditText) findViewById(R.id.numberInput);
-
-        final AlertDialog nameInput = new AlertDialog.Builder(this).create();
-        final EditText input = new EditText(this);
-        nameInput.setTitle("Player Creation");
-        nameInput.setMessage("Please Choose a Nickname:");
-        nameInput.setView(input);
-        nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        player = new Player(input.getText().toString());
-                        playerName.setText(player.name.toUpperCase());
-                        Log.d(TAG, input.getText().toString());
-                        gameTimer.start();
-                        gameTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                            @Override
-                            public void onChronometerTick(Chronometer chronometer) {
-                                if (gameTimer.getText().toString().substring(gameTimer.length() - 2).equals("00")) {
-                                    if ((player.milk + player.cows) < ((player.cows * 25) + (player.tankers * 1000))) {
-                                        player.milk += player.cows;
-                                    } else {
-                                        player.milk = (player.cows * 25) + (player.tankers * 1000);
-                                    }
-                                    milkCount.setText("Milk: " + player.milk + " gallons");
-                                }
-                            }
-                        });
-                        nameInput.dismiss();
-                    }
-                });
-        nameInput.show();
-
 
         // References to all Buttons/Switches
         Button cowButton = (Button) findViewById(R.id.cowButton);

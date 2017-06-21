@@ -1,15 +1,23 @@
 package com.broomhandleus.maximus.cowpitalism.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.EditText;
 
 import com.broomhandleus.maximus.cowpitalism.R;
+import com.broomhandleus.maximus.cowpitalism.types.Player;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String playerName;
+    private Intent screenSwitch;
     private Button startButton;
     private Button rulesButton;
     private Button joinButton;
@@ -24,8 +32,22 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent screenSwitch = new Intent(getApplication(), HostInGameActivity.class);
-                startActivity(screenSwitch);
+                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this).create();
+                final EditText input = new EditText(MainActivity.this);
+                nameInput.setTitle("Player Creation");
+                nameInput.setMessage("Please Choose a Nickname:");
+                nameInput.setView(input);
+                nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                playerName = input.getText().toString();
+                                nameInput.dismiss();
+                                Intent screenSwitch = new Intent(getApplication(), HostInGameActivity.class);
+                                screenSwitch.putExtra("PLAYER_NAME", playerName);
+                                startActivity(screenSwitch);
+                            }
+                        });
+                nameInput.show();
             }
         });
 
@@ -33,8 +55,22 @@ public class MainActivity extends AppCompatActivity {
         joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent screenSwitch = new Intent(getApplication(), PlayerInGameActivity.class);
-                startActivity(screenSwitch);
+                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this).create();
+                final EditText input = new EditText(MainActivity.this);
+                nameInput.setTitle("Player Creation");
+                nameInput.setMessage("Please Choose a Nickname:");
+                nameInput.setView(input);
+                nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                playerName = input.getText().toString();
+                                nameInput.dismiss();
+                                Intent screenSwitch = new Intent(getApplication(), PlayerInGameActivity.class);
+                                screenSwitch.putExtra("PLAYER_NAME", playerName);
+                                startActivity(screenSwitch);
+                            }
+                        });
+                nameInput.show();
             }
         });
 

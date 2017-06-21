@@ -15,6 +15,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -90,6 +92,11 @@ public class PlayerInGameActivity extends AppCompatActivity {
     private double moreMoney;
     private Chronometer gameTimer;
 
+    // Navigation Drawer
+    private String[] drawerOptions;
+    private DrawerLayout drawerLayout;
+    private ListView drawerList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +105,15 @@ public class PlayerInGameActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
+
+        drawerOptions = new String[1];
+        drawerOptions[0] = "Leaderboard";
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerList = (ListView) findViewById(R.id.left_drawer);
+
+        // Set adapter for the ListView
+        drawerList.setAdapter(new ArrayAdapter<String>(PlayerInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));
 
         Bundle extras = getIntent().getExtras();
         if (extras == null) {

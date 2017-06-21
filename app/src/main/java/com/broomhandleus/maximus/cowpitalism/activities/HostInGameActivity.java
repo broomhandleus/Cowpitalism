@@ -10,15 +10,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -81,6 +84,10 @@ public class HostInGameActivity extends AppCompatActivity {
     private double moreMoney;
     private Chronometer gameTimer;
 
+    // Navigation Drawer
+    private String[] drawerOptions;
+    private DrawerLayout drawerLayout;
+    private ListView drawerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +98,19 @@ public class HostInGameActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
+        drawerOptions = new String[4];
+        drawerOptions[0] = "Make Discoverable";
+        drawerOptions[1] = "Approve Players";
+        drawerOptions[2] = "Ping All Players";
+        drawerOptions[3] = "Leaderboard";
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerList = (ListView) findViewById(R.id.left_drawer);
+
+        // Set adapter for the ListView
+        drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));
+
+        // Retrieving player name from intent extras
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
             Log.d(TAG, "Yo, something went wrong with getting the player name.");
@@ -268,6 +288,7 @@ public class HostInGameActivity extends AppCompatActivity {
                 nameInput.show();
             }
         });
+
         cowCount = (TextView) findViewById(R.id.cowCount);
         milkCount = (TextView) findViewById(R.id.milkCount);
         moneyCount = (TextView) findViewById(R.id.moneyCount);

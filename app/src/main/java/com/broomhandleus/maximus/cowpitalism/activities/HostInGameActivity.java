@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -88,6 +89,7 @@ public class HostInGameActivity extends AppCompatActivity {
     private String[] drawerOptions;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    private ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +97,6 @@ public class HostInGameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_host_in_game);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Cowpitalism");
 
         drawerOptions = new String[4];
@@ -106,6 +107,26 @@ public class HostInGameActivity extends AppCompatActivity {
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
+
+        // Navigation drawer icon
+        drawerToggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                R.string.drawer_open,
+                R.string.drawer_close) {
+
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                supportInvalidateOptionsMenu();
+                getActionBar().setTitle("Cowpitalism");
+            }
+
+            public void onDrawerOpened(View view) {
+                super.onDrawerOpened(view);
+                supportInvalidateOptionsMenu();
+                getActionBar().setTitle("Cowpitalism");
+            }
+        };
 
         // Set adapter for the ListView
         drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));

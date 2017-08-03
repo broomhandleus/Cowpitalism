@@ -3,4 +3,6 @@
     <string name="title_activity_rules">RulesActivity</string>
     <string name="title_activity_in_game">InGameActivity</string>
     <string name="title_activity_player_in_game">PlayerInGameActivity</string>
+    <string name="drawer_open">drawer open</string>
+    <string name="drawer_close">drawer close</string>
 </resources>

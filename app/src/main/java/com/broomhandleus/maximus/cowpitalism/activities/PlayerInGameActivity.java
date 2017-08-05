@@ -31,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -426,6 +427,12 @@ public class PlayerInGameActivity extends AppCompatActivity {
         });
 
         final Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
+        chickenSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                player.chickenShield = !player.chickenShield;
+            }
+        });
 
         Button burgerButton = (Button) findViewById(R.id.burgerButton);
         burgerButton.setOnClickListener(new View.OnClickListener() {

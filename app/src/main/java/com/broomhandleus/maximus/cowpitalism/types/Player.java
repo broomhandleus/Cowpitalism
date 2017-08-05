@@ -15,6 +15,7 @@ public class Player {
     public int semis;
     public int tankers;
     public int barns;
+    public boolean chickenShield;
     private int kitties;
 
     public Player(String newName) {
@@ -27,6 +28,7 @@ public class Player {
         semis = 0;
         tankers = 0;
         barns = 0;
+        chickenShield = false;
 
         // everyone should have a kitty... or 5
         kitties = (int) (5 * Math.random());

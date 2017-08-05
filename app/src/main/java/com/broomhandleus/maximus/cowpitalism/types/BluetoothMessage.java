@@ -17,11 +17,15 @@ import java.util.UUID;
  */
 public class BluetoothMessage implements Serializable {
     public static final int JOIN_REQUEST_VALUE = 12345;
+    public static final int GRAVEYARD = 0;
+    public static final int BURGER_JOINT = 499;
     public enum Type {
         ACK,
         PING_CLIENT,
         JOIN_REQUEST,
-        JOIN_RESPONSE
+        JOIN_RESPONSE,
+        GRAVEYARD,
+        BURGER_JOINT
     }
 
     public Type type;

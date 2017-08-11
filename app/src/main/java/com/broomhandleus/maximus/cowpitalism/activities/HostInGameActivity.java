@@ -79,6 +79,7 @@ public class HostInGameActivity extends AppCompatActivity {
     private TextView semiCount;
     private TextView hayBaleCount;
     private Button startButton;
+    private Switch chickenSwitch;
     private EditText numberInput;
 
     // Local Variables
@@ -445,16 +446,8 @@ public class HostInGameActivity extends AppCompatActivity {
         graveyardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Original graveyard button functionality, changed to sending bluetooth message.
-//                if (player.barns != 0) {
-//                    player.cows = Math.min(player.cows, player.barns * 20);
-//                } else {
-//                    player.cows = 0;
-//                }
-//                cowCount.setText("Cows: " + player.cows);
-
                 // New Functionality, sends graveyard message to all players
-                sendGraveyard();
+                sendToAll(BluetoothMessage.Type.GRAVEYARD, 99);
             }
         });
 
@@ -482,7 +475,7 @@ public class HostInGameActivity extends AppCompatActivity {
             }
         });
 
-        final Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
+        Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
         chickenSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -494,16 +487,8 @@ public class HostInGameActivity extends AppCompatActivity {
         burgerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Original burger joint functionality, changed to sending bluetooth message
-//                if (!chickenSwitch.isChecked()) {
-//                    player.cows = Math.max(player.cows / 2, player.barns * 20);
-//                    cowCount.setText("Cows: " + player.cows);
-//                } else {
-//                    chickenSwitch.toggle();
-//                }
-
                 // New functionality, sends burger joint message to all players
-                sendBurgerJoint();
+                sendToAll(BluetoothMessage.Type.BURGER_JOINT, 99);
             }
         });
 
@@ -600,15 +585,17 @@ public class HostInGameActivity extends AppCompatActivity {
     }
 
     /**
-     * Sends a bluetooth message to all players that activates the graveyard feature
+     * Sends a bluetooth message to all players that activates the feature dictated by the messageType
+     * @param messageType - type of bluetooth message (Enum)
+     * @param playerIndex - index of the player to skip, who sent the message
      */
-    public void sendGraveyard() {
+    public void sendToAll(BluetoothMessage.Type messageType, int playerIndex) {
         Log.d(TAG, "uh oh... some cows be dyin'");
         Log.d(TAG, "----------------------");
         // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
         for (int i = 0; i < MAX_DEVICES; i++) {
             // .....because we don't associate ourselves with those null BluetoothDevice's.
-            if (playersList[i] == null) {
+            if (playersList[i] == null || i == playerIndex) {
                 continue;
             }
 
@@ -617,32 +604,8 @@ public class HostInGameActivity extends AppCompatActivity {
             } else {
                 Log.d(TAG, "Sending graveyard to: " + playersList[i].getAddress());
             }
-            BluetoothMessage graveyardMessage = new BluetoothMessage(BluetoothMessage.Type.GRAVEYARD, BluetoothMessage.GRAVEYARD, "");
+            BluetoothMessage graveyardMessage = new BluetoothMessage(messageType, 42, "");
             SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[i], graveyardMessage);
-            executorsList[i].submit(sendMessageRunnable);
-        }
-    }
-
-    /**
-     * Sends a bluetooth message to all players that activates the burger joint feature
-     */
-    public void sendBurgerJoint() {
-        Log.d(TAG, "Half the cows have gone missing!");
-        Log.d(TAG, "----------------------");
-        // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
-        for (int i = 0; i < MAX_DEVICES; i++) {
-            // .....because we don't associate ourselves with those null BluetoothDevice's.
-            if (playersList[i] == null) {
-                continue;
-            }
-
-            if (playersList[i].getName() != null) {
-                Log.d(TAG, "Sending burger joint to: " + playersList[i].getName());
-            } else {
-                Log.d(TAG, "Sending burger joint to: " + playersList[i].getAddress());
-            }
-            BluetoothMessage burgerJointMessage = new BluetoothMessage(BluetoothMessage.Type.BURGER_JOINT, BluetoothMessage.BURGER_JOINT, "");
-            SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[i], burgerJointMessage);
             executorsList[i].submit(sendMessageRunnable);
         }
     }
@@ -809,7 +772,19 @@ public class HostInGameActivity extends AppCompatActivity {
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
                 } else if (inMessage.type == BluetoothMessage.Type.GRAVEYARD) {
                     Log.d(TAG, "Graveyard message received");
-                    // TODO: check inMessage sender, then send to all players except the original sender.
+                    sendToAll(BluetoothMessage.Type.GRAVEYARD, playerIdx);
+                    player.cows = 0;
+                    cowCount.setText("Cows: 0");
+                } else if (inMessage.type == BluetoothMessage.Type.BURGER_JOINT) {
+                    Log.d(TAG, "Burger Joint message received");
+                    sendToAll(BluetoothMessage.Type.BURGER_JOINT, playerIdx);
+                    if (player.chickenShield == true) {
+                        player.chickenShield = false;
+                        chickenSwitch.toggle();
+                    } else {
+                        player.cows = player.cows / 2;
+                        cowCount.setText("Cows: " + player.cows);
+                    }
                 }
 
             } catch (StreamCorruptedException e) {

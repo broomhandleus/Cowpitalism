@@ -86,6 +86,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
     private TextView tankerCount;
     private TextView semiCount;
     private TextView hayBaleCount;
+    private Switch chickenSwitch;
     private EditText numberInput;
 
     // Local Variables
@@ -393,12 +394,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
         graveyardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (player.barns != 0) {
-                    player.cows = Math.min(player.cows, player.barns * 20);
-                } else {
-                    player.cows = 0;
-                }
-                cowCount.setText("Cows: " + player.cows);
+                // Send GRAVEYARD message to the host
+                sendToHost(BluetoothMessage.Type.GRAVEYARD);
             }
         });
 
@@ -426,7 +423,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
             }
         });
 
-        final Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
+        Switch chickenSwitch = (Switch) findViewById(R.id.chickenSwitch);
         chickenSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -438,12 +435,8 @@ public class PlayerInGameActivity extends AppCompatActivity {
         burgerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!chickenSwitch.isChecked()) {
-                    player.cows = Math.max(player.cows / 2, player.barns * 20);
-                    cowCount.setText("Cows: " + player.cows);
-                } else {
-                    chickenSwitch.toggle();
-                }
+                // Send BURGER_JOINT message to the host
+                sendToHost(BluetoothMessage.Type.BURGER_JOINT);
             }
         });
 
@@ -537,6 +530,16 @@ public class PlayerInGameActivity extends AppCompatActivity {
         // Handle your other action bar items...
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Sending a BluetoothMessage to the host to perform an action
+     * @param messageType - dictates which feature to activate
+     */
+    public void sendToHost(BluetoothMessage.Type messageType) {
+        BluetoothMessage actionMessage = new BluetoothMessage(messageType, 42, "");
+        SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, MY_UUIDS[0], actionMessage);
+        executor.submit(sendMessageRunnable);
     }
 
     /**
@@ -718,6 +721,19 @@ public class PlayerInGameActivity extends AppCompatActivity {
                     playerAcceptThread.start();
                 } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
                     Log.d(TAG,"I HAVE BEEN PINGED!!!");
+                } else if (inMessage.type == BluetoothMessage.Type.GRAVEYARD) {
+                    Log.d(TAG, "Graveyard message received");
+                    player.cows = 0;
+                    cowCount.setText("Cows: 0");
+                } else if (inMessage.type == BluetoothMessage.Type.BURGER_JOINT) {
+                    Log.d(TAG, "Burger Joint message received");
+                    if (player.chickenShield == true) {
+                        player.chickenShield = false;
+                        chickenSwitch.toggle();
+                    } else {
+                        player.cows = player.cows / 2;
+                        cowCount.setText("Cows: " + player.cows);
+                    }
                 } else {
                     Log.e(TAG, "Some other kind of message has arrived!");
                 }

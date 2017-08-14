@@ -10,7 +10,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -18,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -332,7 +335,7 @@ public class HostInGameActivity extends AppCompatActivity {
         numberInput = (EditText) findViewById(R.id.numberInput);
 
         // References to all Buttons/Switches
-        Button cowButton = (Button) findViewById(R.id.cowButton);
+        final Button cowButton = (Button) findViewById(R.id.cowButton);
         cowButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -351,6 +354,33 @@ public class HostInGameActivity extends AppCompatActivity {
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
+
+        // Attempting to change the color of the button when it is pressed.
+//        cowButton.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                switch(event.getAction()) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        cowButton.setBackgroundColor(Color.GREEN);
+//                        int addNum;
+//                        if (!numberInput.getText().toString().isEmpty()) {
+//                            addNum = Integer.parseInt(numberInput.getText().toString());
+//                        } else {
+//                            addNum = 1;
+//                        }
+//                        player.cows = player.cows + addNum;
+//                        cowCount.setText("Cows: " + player.cows);
+//                        numberInput.setText("");
+//                        InputMethodManager inputManager = (InputMethodManager)
+//                                getSystemService(Context.INPUT_METHOD_SERVICE);
+//                        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+//                                InputMethodManager.HIDE_NOT_ALWAYS);
+//                    case MotionEvent.ACTION_UP:
+//                        cowButton.setBackgroundColor(Color.GRAY);
+//                }
+//                return true;
+//            }
+//        });
 
         Button horseButton = (Button) findViewById(R.id.horseButton);
         horseButton.setOnClickListener(new View.OnClickListener() {

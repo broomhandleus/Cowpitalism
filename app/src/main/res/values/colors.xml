@@ -5,4 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="GREEN">#219000</color>
     <color name="RED">#B60000</color>
+    <color name="primary_material_dark">#161616</color>
+    <color name="accent_material_dark">#06962a</color>
+    <color name="foreground_material_dark">#9a9a9a</color>
 </resources>

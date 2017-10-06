@@ -9,8 +9,6 @@
 .externalNativeBuild
 .idea/modules.xml
 .idea/vcs.xml
-app/build.gradle
-build.gradle
 .idea/encodings.xml
 .idea/misc.xml
 .idea/dictionaries/

@@ -1,4 +1,4 @@
-package com.broomhandleus.maximus.cowpitalism.types;
+package com.wordpress.simpledevelopments.btcommlib;
 
 import java.io.Serializable;
 import java.util.UUID;

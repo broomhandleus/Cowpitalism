@@ -1,7 +1,5 @@
 package com.broomhandleus.maximus.cowpitalism.activities;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -28,23 +26,18 @@ import android.widget.TextView;
 import com.broomhandleus.maximus.cowpitalism.R;
 import com.broomhandleus.maximus.cowpitalism.types.Player;
 import com.wordpress.simpledevelopments.btcommlib.BTCommParent;
-import com.wordpress.simpledevelopments.btcommlib.BluetoothMessage;
 import com.wordpress.simpledevelopments.btcommlib.Callback;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class HostInGameActivity extends AppCompatActivity {
 
     // Static Final Values
     public static final String TAG = "HostInGameActivity";
     public static final String SERVICE_NAME = "Cowpitalism";
-    private static final int REQUEST_ENABLE_BT = 1;
     public static final UUID[] MY_UUIDS = {
             UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
             UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
@@ -65,7 +58,6 @@ public class HostInGameActivity extends AppCompatActivity {
     private TextView tankerCount;
     private TextView semiCount;
     private TextView hayBaleCount;
-    private Button startButton;
     private Switch chickenSwitch;
     private EditText numberInput;
 
@@ -121,7 +113,7 @@ public class HostInGameActivity extends AppCompatActivity {
             }
         };
 
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -137,9 +129,12 @@ public class HostInGameActivity extends AppCompatActivity {
                         btCommParent.makeDiscoverable();
                         break;
                     case 1:
-                        Log.d(TAG, "Approving Children!");
+                        Log.d(TAG, "Approving Players!");
                         btCommParent.approveChildren();
                         break;
+                    case 2:
+                        Log.d(TAG, "Pinging all Players!");
+                        btCommParent.sendToAll("PING_CLIENT", "");
                     default:
                         break;
                 }
@@ -190,107 +185,6 @@ public class HostInGameActivity extends AppCompatActivity {
         });
 
         btCommParent.addMessageActions(messageActions);
-
-
-//        startButton = (Button) findViewById(R.id.startButton);
-//        startButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Making the host device discoverable
-//                Log.d(TAG, "Now discoverable for the next 30 seconds!");
-//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
-//                startActivity(discoverableIntent);
-//
-//                /**
-//                 * Since this device is now going to be the host, we will start accepting incoming
-//                 * connections from potential players, we will start a background thread listening
-//                 * for those incoming connections on the first UUID's channel.
-//                 *
-//                 * Once the host is done letting people try to join, this AcceptThread will be
-//                 * canceled/closed somehow. Then each approved player, will receive a message
-//                 * containing their channelUUID (one of the seven available).
-//                 *
-//                 * e.g. MY_UUIDS[0] will no longer be receiving join requests from people,
-//                 * but rather it will be assigned to communicate with one specific player.
-//                 * TODO: Make sure the individual AcceptThreads for each device checks the mac
-//                 * TODO: address of incoming messages to make sure their from the only perm. device.
-//                 */
-//                hostAcceptThreads[0] = new AcceptThread(0);
-//                hostAcceptThreads[0].start();
-//            }
-//        });
-
-//        Button approveButton = (Button) findViewById(R.id.approveButton);
-//        approveButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d(TAG, "Approving players...." + potentialPlayers.size());
-//                Log.d(TAG, "-----------------------");
-//                if (potentialPlayers.size() > MAX_DEVICES) {
-//                    Log.e(TAG, "Too many people joined game!");
-//                    return;
-//                }
-//
-//                // Stop initial accept thread
-//                hostAcceptThreads[0].cancel();
-//                hostAcceptThreads[0] = null;
-//
-//
-//                // Ensure we clear out the playersList from a previous game (maybe not necessary)
-//                for (int i = 0; i < MAX_DEVICES; i++) {
-//                    playersList[i] = null;
-//                }
-//
-//                /**
-//                 * Put each player into the list, start a thread to accept incoming connections
-//                 * from them on their given channelUUID, then send them a message containing that channelUUID
-//                 * with which they will communicate with this host for the remainder of the game.
-//                 * Upon recv'ing this message, each player will stop listening on the default
-//                 * channel (0) and will only listen on this given channelUUID.
-//                 */
-//                for (int i = 0 ; i < potentialPlayers.size(); i++) {
-//                    playersList[i] = potentialPlayers.get(i);
-//                    Log.d(TAG, "Adding " + deviceName(playersList[i]) + " to position " + i);
-//
-//                    hostAcceptThreads[i] = new AcceptThread(i);
-//                    hostAcceptThreads[i].start();
-//
-//                    // Message contains "i", which is the playerIdx which will yield the UUID
-//                    BluetoothMessage joinResponseMessage = new BluetoothMessage(BluetoothMessage.Type.JOIN_RESPONSE,i,"");
-//                    SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[0],joinResponseMessage);
-//                    executorsList[i].submit(sendMessageRunnable);
-//                }
-//                Log.d(TAG, "-----------------------");
-//            }
-//        });
-
-//        Button pingButton = (Button) findViewById(R.id.pingButton);
-//        pingButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d(TAG, "Pinging the clients!!!");
-//                Log.d(TAG, "----------------------");
-//                // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
-//                for (int i = 0; i < MAX_DEVICES; i++) {
-//                    // .....because we don't associate ourselves with those null BluetoothDevice's.
-//                    if (playersList[i] == null) {
-//                        continue;
-//                    }
-//
-//                    if (playersList[i].getName() != null) {
-//                        Log.d(TAG, "Pinging " + playersList[i].getName());
-//                    } else {
-//                        Log.d(TAG, "Pinging " + playersList[i].getAddress());
-//                    }
-//                    BluetoothMessage pingMessage = new BluetoothMessage(BluetoothMessage.Type.PING_CLIENT, 0, "");
-//                    SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],MY_UUIDS[i],pingMessage);
-//                    executorsList[i].submit(sendMessageRunnable);
-//                }
-//            }
-//        });
-
-
 
         // Game Timer
         gameTimer = (Chronometer) findViewById(R.id.chronometer);

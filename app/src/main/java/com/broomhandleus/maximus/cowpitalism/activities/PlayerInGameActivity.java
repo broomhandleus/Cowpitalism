@@ -42,7 +42,6 @@ public class PlayerInGameActivity extends AppCompatActivity {
     // Static Final Values
     public static final String TAG = "PlayerInGameActivity";
     public static final String SERVICE_NAME = "Cowpitalism";
-    private static final int REQUEST_ENABLE_BT = 1;
     public static final UUID[] MY_UUIDS = {
             UUID.fromString("c12380c7-0d88-4250-83d1-fc835d3833d9"),
             UUID.fromString("cb8cd1c1-fc37-4395-838f-728d818b2485"),
@@ -116,7 +115,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
             }
         };
 
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);

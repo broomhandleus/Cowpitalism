@@ -5,5 +5,5 @@ package com.wordpress.simpledevelopments.btcommlib;
  */
 
 public interface Callback {
-    public void action();
+    public void action(int childIndex, String argument);
 }

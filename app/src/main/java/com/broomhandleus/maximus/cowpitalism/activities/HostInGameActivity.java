@@ -26,10 +26,14 @@ import android.widget.TextView;
 
 import com.broomhandleus.maximus.cowpitalism.R;
 import com.broomhandleus.maximus.cowpitalism.types.Player;
+import com.wordpress.simpledevelopments.btcommlib.BTCommParent;
 import com.wordpress.simpledevelopments.btcommlib.BluetoothMessage;
+import com.wordpress.simpledevelopments.btcommlib.Callback;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,6 +80,8 @@ public class HostInGameActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ActionBarDrawerToggle drawerToggle;
+
+    private BTCommParent btCommParent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,9 +136,41 @@ public class HostInGameActivity extends AppCompatActivity {
             player = new Player(extras.getString("PLAYER_NAME"));
         }
 
+        btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);
 
+        Map<String, Callback> messageActions = new HashMap<>();
+        messageActions.put("PING_CLIENT", new Callback() {
+            @Override
+            public void action(int playerIdx, String argument) {
+                Log.d(TAG,"I HAVE BEEN PINGED!!!");
 
+            }
+        });
+        messageActions.put("GRAVEYARD", new Callback() {
+            @Override
+            public void action(int playerIdx, String argument) {
+                Log.d(TAG, "Graveyard message received");
+                btCommParent.sendToAll("GRAVEYARD",argument,playerIdx);
+                player.cows = 0;
+                cowCount.setText("Cows: 0");
+            }
+        });
+        messageActions.put("BURGER_JOINT", new Callback() {
+            @Override
+            public void action(int playerIdx, String argument) {
+                Log.d(TAG, "Burger Joint message received");
+                btCommParent.sendToAll("BURGER_JOINT",argument,playerIdx);
+                if (player.chickenShield == true) {
+                    player.chickenShield = false;
+                    chickenSwitch.toggle();
+                } else {
+                    player.cows = player.cows / 2;
+                    cowCount.setText("Cows: " + player.cows);
+                }
+            }
+        });
 
+        btCommParent.addMessageActions(messageActions);
 
 
 //        startButton = (Button) findViewById(R.id.startButton);
@@ -438,7 +476,7 @@ public class HostInGameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // New Functionality, sends graveyard message to all players
-                sendToAll(BluetoothMessage.Type.GRAVEYARD, 99);
+                btCommParent.sendToAll("GRAVEYARD", "");
             }
         });
 
@@ -479,7 +517,7 @@ public class HostInGameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // New functionality, sends burger joint message to all players
-                sendToAll(BluetoothMessage.Type.BURGER_JOINT, 99);
+                btCommParent.sendToAll("BURGER_JOINT", "");
             }
         });
 
@@ -582,7 +620,6 @@ public class HostInGameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(discoverableReceiver);
     }
 
 }

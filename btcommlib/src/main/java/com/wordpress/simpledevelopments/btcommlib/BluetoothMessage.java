@@ -16,27 +16,27 @@ import java.util.UUID;
  *
  */
 public class BluetoothMessage implements Serializable {
-    public static final int JOIN_REQUEST_VALUE = 12345;
-    public static final int GRAVEYARD = 0;
-    public static final int BURGER_JOINT = 499;
+    public static final String JOIN_REQUEST_CONTENT = "12345";
     public enum Type {
-        ACK,
-        PING_CLIENT,
-        JOIN_REQUEST,
-        JOIN_RESPONSE,
-        GRAVEYARD,
-        BURGER_JOINT
+        INTERNAL_USE,
+        CLIENT_USE,
+//        ACK,
+//        PING_CLIENT,
+//        JOIN_REQUEST,
+//        JOIN_RESPONSE,
+//        GRAVEYARD,
+//        BURGER_JOINT
     }
 
     public Type type;
-    public int value;
-    public String body;
+    public String content;
+    public String contentType;
     public UUID id;
 
-    public BluetoothMessage(Type type, int value, String body) {
+    public BluetoothMessage(Type type, String contentType, String content) {
         this.type = type;
-        this.value = value;
-        this.body = body;
+        this.contentType = contentType;
+        this.content = content;
         this.id = UUID.randomUUID();
     }
 }

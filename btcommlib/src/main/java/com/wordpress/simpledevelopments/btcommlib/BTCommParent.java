@@ -1,6 +1,5 @@
 package com.wordpress.simpledevelopments.btcommlib;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
@@ -10,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
-import android.telecom.Call;
 import android.util.Log;
 
 import java.io.IOException;
@@ -38,7 +36,7 @@ public class BTCommParent {
     private BluetoothAdapter mBluetoothAdapter;
     private volatile boolean discoverable;
     private List<BluetoothDevice> potentialPlayers;
-    private BluetoothDevice[] playersList;
+    private BluetoothDevice[] childList;
     private ExecutorService[] executorsList;
 
 
@@ -48,7 +46,7 @@ public class BTCommParent {
     private final Map<String, Callback> messageActions;
 
 
-    public BTCommParent(AppCompatActivity contextActivity, String serviceName, UUID[] uuidList, Map<String, Callback> messageActions) {
+    public BTCommParent(AppCompatActivity contextActivity, String serviceName, UUID[] uuidList) {
         hostAcceptThreads = new AcceptThread[MAX_DEVICES];
 
         // General Bluetooth accessibility
@@ -74,14 +72,14 @@ public class BTCommParent {
             this.uuidList[i] = uuidList[i];
         }
         // Do a complete (but shallow) copy of the map of MessageActions
-        this.messageActions = new HashMap<>(messageActions);
+        this.messageActions = new HashMap<>();
 
         // Making Discoverable
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
         contextActivity.registerReceiver(discoverableReceiver, filter);
 
         // Initialize lists
-        playersList = new BluetoothDevice[MAX_DEVICES];
+        childList = new BluetoothDevice[MAX_DEVICES];
         executorsList = new ExecutorService[MAX_DEVICES];
         for (int i = 0; i < MAX_DEVICES; i++) {
             executorsList[i] = Executors.newSingleThreadExecutor();
@@ -91,27 +89,43 @@ public class BTCommParent {
     }
 
     /**
-     * Sends a bluetooth message to all players that activates the feature dictated by the messageType
-     * @param messageType - type of bluetooth message (Enum)
-     * @param playerIndex - index of the player to skip, who sent the message
+     * Adds the provided message actions to this parent.
+     * @param messageActions
      */
-    public void sendToAll(BluetoothMessage.Type messageType, int playerIndex) {
-        Log.d(TAG, "uh oh... some cows be dyin'");
-        Log.d(TAG, "----------------------");
-        // Iterate through all peer devices and fire off a thread for each one which sends it a ping message
+    public void addMessageActions(Map<String, Callback> messageActions) {
+        this.messageActions.putAll(messageActions);
+    }
+
+    /**
+     * Sends a bluetooth message to ALL children
+     * @param type - The user-defined type of the message
+     * @param content - The content/body of the message
+     */
+    public void sendToAll(String type, String content) {
+        sendToAll(type, content,-1);
+    }
+
+    /**
+     * Sends a bluetooth message to all children except the one specified
+     * @param type - The user-defined type of the message
+     * @param content - The content/body of the message
+     * @param childIndex - index of the child to skip
+     */
+    public void sendToAll(String type, String content, int childIndex) {
+        // Iterate through all peer devices and fire off a thread for each one which sends it the message
         for (int i = 0; i < MAX_DEVICES; i++) {
             // .....because we don't associate ourselves with those null BluetoothDevice's.
-            if (playersList[i] == null || i == playerIndex) {
+            if (childList[i] == null || i == childIndex) {
                 continue;
             }
 
-            if (playersList[i].getName() != null) {
-                Log.d(TAG, "Sending graveyard to: " + playersList[i].getName());
+            if (childList[i].getName() != null) {
+                Log.d(TAG, "Sending message to: " + childList[i].getName());
             } else {
-                Log.d(TAG, "Sending graveyard to: " + playersList[i].getAddress());
+                Log.d(TAG, "Sending message to: " + childList[i].getAddress());
             }
-            BluetoothMessage graveyardMessage = new BluetoothMessage(messageType, 42, "");
-            SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(playersList[i],uuidList[i], graveyardMessage);
+            BluetoothMessage message = new BluetoothMessage(BluetoothMessage.Type.CLIENT_USE, type, content);
+            SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(childList[i],uuidList[i], message);
             executorsList[i].submit(sendMessageRunnable);
         }
     }
@@ -137,6 +151,7 @@ public class BTCommParent {
                                 e.printStackTrace();
                             }
                             discoverable = false;
+                            contextActivity.unregisterReceiver(discoverableReceiver);
                             Log.d(TAG, "We are no longer discoverable!");
                         }
                     };
@@ -169,7 +184,7 @@ public class BTCommParent {
 
                 Log.v(TAG, "Pulled in message");
                 // Sent ACK
-                BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.ACK,0,"ACK-" + inMessage.id);
+                BluetoothMessage ackMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"ACK",inMessage.id.toString());
                 Log.v(TAG, "Sending ACK!!");
                 messageOutputStream.writeObject(ackMessage);
 
@@ -186,35 +201,24 @@ public class BTCommParent {
                  * Act accordingly depending on the type of message just received.
                  * All the logic for different kinds of messages goes here.
                  */
-                if (inMessage.type == BluetoothMessage.Type.JOIN_REQUEST
-                        && inMessage.value == BluetoothMessage.JOIN_REQUEST_VALUE) {
-                    if (discoverable) {
-                        Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
-                        if (!potentialPlayers.contains(socket.getRemoteDevice())) {
-                            potentialPlayers.add(socket.getRemoteDevice());
-                        }
-                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
-                    } else {
-                        Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
+                if (inMessage.type == BluetoothMessage.Type.INTERNAL_USE) {
+                    if (inMessage.contentType.equals("JOIN_REQUEST")
+                            && inMessage.content.equals(BluetoothMessage.JOIN_REQUEST_CONTENT)) {
+                        if (discoverable) {
+                            Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
+                            if (!potentialPlayers.contains(socket.getRemoteDevice())) {
+                                potentialPlayers.add(socket.getRemoteDevice());
+                            }
+                            Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
+                        } else {
+                            Log.d(TAG, deviceName(socket.getRemoteDevice()) + " tried to join too late!");
 
+                        }
                     }
-                } else if (inMessage.type == BluetoothMessage.Type.PING_CLIENT){
-                    Log.d(TAG,"I HAVE BEEN PINGED!!!");
-                } else if (inMessage.type == BluetoothMessage.Type.GRAVEYARD) {
-                    Log.d(TAG, "Graveyard message received");
-                    sendToAll(BluetoothMessage.Type.GRAVEYARD, playerIdx);
-                    player.cows = 0;
-                    cowCount.setText("Cows: 0");
-                } else if (inMessage.type == BluetoothMessage.Type.BURGER_JOINT) {
-                    Log.d(TAG, "Burger Joint message received");
-                    sendToAll(BluetoothMessage.Type.BURGER_JOINT, playerIdx);
-                    if (player.chickenShield == true) {
-                        player.chickenShield = false;
-                        chickenSwitch.toggle();
-                    } else {
-                        player.cows = player.cows / 2;
-                        cowCount.setText("Cows: " + player.cows);
-                    }
+                } else if (inMessage.type == BluetoothMessage.Type.CLIENT_USE) {
+                    // Execute the users action for the specific type of content
+                    // Pass the BluetoothMessage content as argument
+                    messageActions.get(inMessage.contentType).action(playerIdx,inMessage.content);
                 }
 
             } catch (StreamCorruptedException e) {
@@ -269,15 +273,16 @@ public class BTCommParent {
                 // Attempt to receive ACK message
                 // TODO: Has the potential to block forever if ack never arrives
                 BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
-                if (potentialAck.type == BluetoothMessage.Type.ACK
-                        && potentialAck.body.equals("ACK-" + message.id)) {
+                if (potentialAck.type == BluetoothMessage.Type.INTERNAL_USE
+                        && potentialAck.contentType.equals("ACK" + message.id)
+                        && potentialAck.content.equals(message.id.toString())) {
                     Log.v(TAG, "Received CORRECT ACK");
                     messageOutputStream.close();
                     messageInputStream.close();
                     socket.close();
                 } else {
                     Log.e(TAG, "Incorrect ACK!!!");
-                    Log.e(TAG, "Seeking: ACK-" + message.id + ", Found: " + potentialAck.body);
+                    Log.e(TAG, "Seeking: ACK-" + message.id + ", Found: " + potentialAck.content);
                     messageOutputStream.close();
                     messageInputStream.close();
                     socket.close();

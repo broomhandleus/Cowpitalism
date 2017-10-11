@@ -274,7 +274,7 @@ public class BTCommParent {
                 // TODO: Has the potential to block forever if ack never arrives
                 BluetoothMessage potentialAck = (BluetoothMessage) messageInputStream.readObject();
                 if (potentialAck.type == BluetoothMessage.Type.INTERNAL_USE
-                        && potentialAck.contentType.equals("ACK" + message.id)
+                        && potentialAck.contentType.equals("ACK")
                         && potentialAck.content.equals(message.id.toString())) {
                     Log.v(TAG, "Received CORRECT ACK");
                     messageOutputStream.close();

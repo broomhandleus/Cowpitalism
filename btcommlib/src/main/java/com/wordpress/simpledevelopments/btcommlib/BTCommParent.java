@@ -39,6 +39,8 @@ public class BTCommParent {
     private BluetoothDevice[] childList;
     private ExecutorService[] executorsList;
 
+    Thread discoverableThread;
+
 
     private AppCompatActivity contextActivity;
     private UUID[] uuidList;
@@ -88,6 +90,70 @@ public class BTCommParent {
         potentialPlayers = new ArrayList<>();
     }
 
+    public void makeDiscoverable() {
+        // Making the host device discoverable
+        Log.d(TAG, "Now discoverable for the next 30 seconds!");
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
+        contextActivity.startActivity(discoverableIntent);
+
+        /**
+         * Since this device is now going to be the host, we will start accepting incoming
+         * connections from potential players, we will start a background thread listening
+         * for those incoming connections on the first UUID's channel.
+         *
+         * Once the host is done letting people try to join, this AcceptThread will be
+         * canceled/closed somehow. Then each approved player, will receive a message
+         * containing their channelUUID (one of the seven available).
+         *
+         * e.g. MY_UUIDS[0] will no longer be receiving join requests from people,
+         * but rather it will be assigned to communicate with one specific player.
+         * TODO: Make sure the individual AcceptThreads for each device checks the mac
+         * TODO: address of incoming messages to make sure their from the only perm. device.
+         */
+        hostAcceptThreads[0] = new AcceptThread(0);
+        hostAcceptThreads[0].start();
+    }
+
+    public void approveChildren() {
+        Log.d(TAG, "Approving players...." + potentialPlayers.size());
+        Log.d(TAG, "-----------------------");
+        if (potentialPlayers.size() > MAX_DEVICES) {
+            Log.e(TAG, "Too many people joined game!");
+            return;
+        }
+
+        // Stop initial accept thread
+        hostAcceptThreads[0].cancel();
+        hostAcceptThreads[0] = null;
+
+
+        // Ensure we clear out the childList from a previous game (maybe not necessary)
+        for (int i = 0; i < MAX_DEVICES; i++) {
+            childList[i] = null;
+        }
+
+        /**
+         * Put each player into the list, start a thread to accept incoming connections
+         * from them on their given channelUUID, then send them a message containing that channelUUID
+         * with which they will communicate with this host for the remainder of the game.
+         * Upon recv'ing this message, each player will stop listening on the default
+         * channel (0) and will only listen on this given channelUUID.
+         */
+        for (int i = 0 ; i < potentialPlayers.size(); i++) {
+            childList[i] = potentialPlayers.get(i);
+            Log.d(TAG, "Adding " + deviceName(childList[i]) + " to position " + i);
+
+            hostAcceptThreads[i] = new AcceptThread(i);
+            hostAcceptThreads[i].start();
+
+            // Message contains "i", which is the playerIdx which will yield the UUID
+            BluetoothMessage joinResponseMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_RESPONSE",Integer.toString(i));
+            SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(childList[i],uuidList[0],joinResponseMessage);
+            executorsList[i].submit(sendMessageRunnable);
+        }
+        Log.d(TAG, "-----------------------");
+    }
     /**
      * Adds the provided message actions to this parent.
      * @param messageActions
@@ -143,17 +209,21 @@ public class BTCommParent {
                         == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
                     discoverable = true;
                     Log.d(TAG, "We are now discoverable!");
-                    Thread discoverableThread = new Thread() {
+                    discoverableThread = new Thread() {
                         public void run() {
                             try {
                                 Thread.sleep(30000);
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                return;
                             }
-                            discoverable = false;
-                            contextActivity.unregisterReceiver(discoverableReceiver);
-                            Log.d(TAG, "We are no longer discoverable!");
+                            if (!isInterrupted()) {
+                                discoverable = false;
+                                contextActivity.unregisterReceiver(discoverableReceiver);
+                                Log.d(TAG, "We are no longer discoverable!");
+                            }
+
                         }
+
                     };
                     discoverableThread.start();
                 }
@@ -397,6 +467,11 @@ public class BTCommParent {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
         }
+    }
+
+    public void destroy() {
+        discoverableThread.interrupt();
+        contextActivity.unregisterReceiver(discoverableReceiver);
     }
 }
 

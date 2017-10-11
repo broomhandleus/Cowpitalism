@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -127,7 +128,23 @@ public class HostInGameActivity extends AppCompatActivity {
 
         // Set adapter for the ListView
         drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));
-
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0:
+                        Log.d(TAG, "Make Discoverable!");
+                        btCommParent.makeDiscoverable();
+                        break;
+                    case 1:
+                        Log.d(TAG, "Approving Children!");
+                        btCommParent.approveChildren();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
         // Retrieving player name from intent extras
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
@@ -137,6 +154,8 @@ public class HostInGameActivity extends AppCompatActivity {
         }
 
         btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);
+
+        btCommParent.enableBluetooth();
 
         Map<String, Callback> messageActions = new HashMap<>();
         messageActions.put("PING_CLIENT", new Callback() {
@@ -620,6 +639,7 @@ public class HostInGameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        btCommParent.destroy();
     }
 
 }

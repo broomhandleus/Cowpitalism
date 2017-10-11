@@ -31,6 +31,7 @@ public class BluetoothActivationFragment extends DialogFragment {
                 if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                     if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0) == BluetoothAdapter.STATE_ON) {
                         if (enablingDialogFragment != null) {
+                            getContext().unregisterReceiver(broadcastReceiver);
                             enablingDialogFragment.dismiss();
                         } else {
                             Log.e(TAG, "EnablingDialogFragment does not exist!");

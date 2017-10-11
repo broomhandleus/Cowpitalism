@@ -131,7 +131,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
             player = new Player(extras.getString("PLAYER_NAME"));
         }
 
-        btCommChild = new BTCommChild(this, SERVICE_NAME);
+        btCommChild = new BTCommChild(this, SERVICE_NAME, MY_UUIDS);
 
         Map<String, Callback> messageActions = new HashMap<>();
         messageActions.put("PING_CLIENT", new Callback() {

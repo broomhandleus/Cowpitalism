@@ -59,7 +59,7 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
     private final Map<String, Callback> messageActions;
 
 
-    public BTCommChild(AppCompatActivity contextActivity, String serviceName) {
+    public BTCommChild(AppCompatActivity contextActivity, String serviceName, UUID[] uuidList) {
         // General Bluetooth accessibility
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -118,25 +118,25 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
                 BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_REQUEST", BluetoothMessage.JOIN_REQUEST_CONTENT);
                 SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, uuidList[0], joinMessage);
                 executor.submit(sendMessageRunnable);
-
-                // Make it so that we are notified when a new nearby BluetoothDevice is discovered
-                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                contextActivity.registerReceiver(discoverDevicesReceiver, filter);
-
-                // Request permission to search for nearby devices
-                Log.d(TAG, "Attempting to discover nearby devices....");
-                ActivityCompat.requestPermissions(contextActivity,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-                // Begin searching for nearby
-                boolean success = mBluetoothAdapter.startDiscovery();
-                if (success)
-                    Log.d(TAG, "Started DISCOVERING!!!");
-                else
-                    Log.e(TAG, "Failed to start Discovering!!!");
             }
         });
+
+        // Make it so that we are notified when a new nearby BluetoothDevice is discovered
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        contextActivity.registerReceiver(discoverDevicesReceiver, filter);
+
+        // Request permission to search for nearby devices
+        Log.d(TAG, "Attempting to discover nearby devices....");
+        ActivityCompat.requestPermissions(contextActivity,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+        // Begin searching for nearby
+        boolean success = mBluetoothAdapter.startDiscovery();
+        if (success)
+            Log.d(TAG, "Started DISCOVERING!!!");
+        else
+            Log.e(TAG, "Failed to start Discovering!!!");
 
 
     }
@@ -148,7 +148,7 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
      * @param content - content/body of the message
      */
     public void sendToHost(String type, String content) {
-        BluetoothMessage actionMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,type, content);
+        BluetoothMessage actionMessage = new BluetoothMessage(BluetoothMessage.Type.CLIENT_USE,type, content);
         SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, uuidList[0], actionMessage);
         executor.submit(sendMessageRunnable);
     }

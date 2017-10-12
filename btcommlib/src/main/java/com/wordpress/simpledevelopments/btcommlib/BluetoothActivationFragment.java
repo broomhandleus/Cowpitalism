@@ -18,32 +18,23 @@ import android.util.Log;
 
 public class BluetoothActivationFragment extends DialogFragment {
     private static final String TAG = "BluetoothFragment";
-    BroadcastReceiver broadcastReceiver;
+    private static BroadcastReceiver broadcastReceiver;
     EnablingDialogFragment enablingDialogFragment;
 
     public BluetoothActivationFragment() {
         super();
         setCancelable(false);
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0) == BluetoothAdapter.STATE_ON) {
-                        if (enablingDialogFragment != null) {
-                            getContext().unregisterReceiver(broadcastReceiver);
-                            enablingDialogFragment.dismiss();
-                        } else {
-                            Log.e(TAG, "EnablingDialogFragment does not exist!");
-                        }
-                    }
-                }
-            }
-        };
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.d(TAG, "onAttach");
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateDialog");
 
         AlertDialog.Builder parentBuilder = new AlertDialog.Builder(getContext());
         AlertDialog dialog = parentBuilder.setMessage("Bluetooth must be enabled to continue. Would you like to enable it?")
@@ -78,6 +69,23 @@ public class BluetoothActivationFragment extends DialogFragment {
     }
 
     public static class EnablingDialogFragment extends DialogFragment {
+
+        public EnablingDialogFragment() {
+            super();
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                        if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0) == BluetoothAdapter.STATE_ON) {
+                            Log.d(TAG, "Attempting to unregister: " + getContext());
+                            getContext().unregisterReceiver(broadcastReceiver);
+                            dismiss();
+                        }
+                    }
+                }
+            };
+        }
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());

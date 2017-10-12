@@ -1,12 +1,16 @@
 package com.broomhandleus.maximus.cowpitalism.activities;
 
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -128,6 +132,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
             Log.d(TAG, "Yo, something went wrong with getting the player name.");
         } else {
             player = new Player(extras.getString("PLAYER_NAME"));
+            Log.d(TAG, "Player name " + player.name + ", " + extras.getString("PLAYER_NAME"));
         }
 
         btCommChild = new BTCommChild(this, SERVICE_NAME, MY_UUIDS);
@@ -137,6 +142,12 @@ public class PlayerInGameActivity extends AppCompatActivity {
             @Override
             public void action(int childIndex, String argument) {
                 Log.d(TAG,"I HAVE BEEN PINGED!!!");
+//                AlertDialog.Builder builder = new AlertDialog.Builder(PlayerInGameActivity.this);
+//                builder.setMessage("I have been pinged!");
+//                builder.create().show();
+                DisplayFragment displayFragment = new DisplayFragment();
+                displayFragment.show(getSupportFragmentManager(),"displayFragment","I have been pinged!");
+                Log.d(TAG, "Displaying ping window");
             }
         });
 
@@ -164,25 +175,33 @@ public class PlayerInGameActivity extends AppCompatActivity {
         });
 
         btCommChild.addMessageActions(messageActions);
-
-        btCommChild.obtainParent();
+        btCommChild.enableBluetooth();
 
         // Game Timer
         gameTimer = (Chronometer) findViewById(R.id.chronometer);
-        gameTimer.start();
-        gameTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+        btCommChild.obtainParent(new Callback() {
             @Override
-            public void onChronometerTick(Chronometer chronometer) {
-                if (gameTimer.getText().toString().substring(gameTimer.length() - 2).equals("00")) {
-                    if ((player.milk + player.cows) < ((player.cows * 25) + (player.tankers * 1000))) {
-                        player.milk += player.cows;
-                    } else {
-                        player.milk = (player.cows * 25) + (player.tankers * 1000);
+            public void action(int childIndex, String argument) {
+                Log.d(TAG, "Timer start!");
+                gameTimer.start();
+                gameTimer.setBase(SystemClock.elapsedRealtime());
+                gameTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                    @Override
+                    public void onChronometerTick(Chronometer chronometer) {
+                        if (gameTimer.getText().toString().substring(gameTimer.length() - 2).equals("00")) {
+                            if ((player.milk + player.cows) < ((player.cows * 25) + (player.tankers * 1000))) {
+                                player.milk += player.cows;
+                            } else {
+                                player.milk = (player.cows * 25) + (player.tankers * 1000);
+                            }
+                            milkCount.setText("Milk: " + player.milk + " gallons");
+                        }
                     }
-                    milkCount.setText("Milk: " + player.milk + " gallons");
-                }
+                });
             }
         });
+
+
 
         // TextView Instantiations
         playerName = (TextView) findViewById(R.id.titleName);
@@ -483,5 +502,21 @@ public class PlayerInGameActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         btCommChild.onRequestPermissionsResult(requestCode,permissions, grantResults);
+    }
+
+    public static class DisplayFragment extends DialogFragment {
+        String text = "";
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage(text);
+            return builder.create();
+        }
+
+        public void show(FragmentManager fm, String tag, String text) {
+            this.text = text;
+            show(fm,tag);
+        }
     }
 }

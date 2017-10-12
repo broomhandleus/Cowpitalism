@@ -76,9 +76,7 @@ public class BTCommParent {
         // Do a complete (but shallow) copy of the map of MessageActions
         this.messageActions = new HashMap<>();
 
-        // Making Discoverable
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        contextActivity.registerReceiver(discoverableReceiver, filter);
+
 
         // Initialize lists
         childList = new BluetoothDevice[MAX_DEVICES];
@@ -93,6 +91,11 @@ public class BTCommParent {
     public void makeDiscoverable() {
         // Making the host device discoverable
         Log.d(TAG, "Now discoverable for the next 30 seconds!");
+
+        // Making Discoverable
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        contextActivity.registerReceiver(discoverableReceiver, filter);
+
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
         contextActivity.startActivity(discoverableIntent);
@@ -471,7 +474,11 @@ public class BTCommParent {
 
     public void destroy() {
         discoverableThread.interrupt();
-        contextActivity.unregisterReceiver(discoverableReceiver);
+        try {
+            contextActivity.unregisterReceiver(discoverableReceiver);
+        } catch (IllegalArgumentException ex) {
+
+        }
     }
 }
 

@@ -146,6 +146,8 @@ public class HostInGameActivity extends AppCompatActivity {
             Log.d(TAG, "Yo, something went wrong with getting the player name.");
         } else {
             player = new Player(extras.getString("PLAYER_NAME"));
+            Log.d(TAG, "Player name " + player.name + ", " + extras.getString("PLAYER_NAME"));
+
         }
 
         btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);

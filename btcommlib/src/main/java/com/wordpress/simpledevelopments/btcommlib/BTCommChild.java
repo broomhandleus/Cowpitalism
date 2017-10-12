@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -58,6 +59,9 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
     private String serviceName;
     private final Map<String, Callback> messageActions;
 
+    Object waitObject;
+    Callback obtainParentCallback;
+
 
     public BTCommChild(AppCompatActivity contextActivity, String serviceName, UUID[] uuidList) {
         // General Bluetooth accessibility
@@ -85,16 +89,43 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
         // Create ArrayList to contain the devices found (potential game hosts)
         potentialHosts = new ArrayList<>();
         hostsAdapter = new CustomArrayAdapter(contextActivity, potentialHosts);
+
+        waitObject = new Object();
     }
 
-    public void obtainParent() {
+    public void enableBluetooth() {
+        if (!mBluetoothAdapter.isEnabled()) {
+            BluetoothActivationFragment dialogFragment = new BluetoothActivationFragment();
+            dialogFragment.show(contextActivity.getSupportFragmentManager(),"bluetoothActivateFragment");
+        }
+    }
+
+    private boolean checkBTEnabled() {
+        return mBluetoothAdapter.isEnabled();
+    }
+
+    public void obtainParent(Callback callback) {
+        if (!checkBTEnabled()) {
+            Log.e(TAG, "Bluetooth not enabled!");
+            return;
+        }
+
+        obtainParentCallback = callback;
+
         // Create Dialog that displays the constantly-updating list of devices found
         AlertDialog.Builder builder = new AlertDialog.Builder(contextActivity);
         builder.setTitle("Select Game Host");
         ListView listView = new ListView(contextActivity);
         listView.setAdapter(hostsAdapter);
         builder.setView(listView);
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                contextActivity.finish();
+            }
+        });
         final Dialog dialog = builder.create();
+
         dialog.show();
 
         // Setup what happens when we select our game host from the list
@@ -118,6 +149,8 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
                 BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_REQUEST", BluetoothMessage.JOIN_REQUEST_CONTENT);
                 SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, uuidList[0], joinMessage);
                 executor.submit(sendMessageRunnable);
+
+                obtainParentCallback.action(0,"");
             }
         });
 
@@ -137,8 +170,6 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
             Log.d(TAG, "Started DISCOVERING!!!");
         else
             Log.e(TAG, "Failed to start Discovering!!!");
-
-
     }
 
 

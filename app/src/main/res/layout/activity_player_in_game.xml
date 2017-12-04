@@ -206,7 +206,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/numberInput"
                     android:layout_marginTop="50dp"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/hayBaleButton"
@@ -221,7 +222,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/horseButton"
@@ -236,7 +238,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/gasButton"
@@ -251,7 +254,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/barnButton"
@@ -264,7 +268,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
-                    app:layout_constraintLeft_toLeftOf="parent" />
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/burgerButton"
@@ -278,7 +283,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Switch
                     android:id="@+id/chickenSwitch"
@@ -306,7 +312,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/semiButton"
@@ -320,7 +327,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/waterTowerButton"
@@ -334,7 +342,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/graveyardButton"
@@ -348,7 +357,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView5"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/churchButton"
@@ -362,7 +372,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Chronometer
                     android:id="@+id/chronometer"
@@ -423,7 +434,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/purchaseHorseButton"
@@ -438,7 +450,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <TextView
                     android:id="@+id/textView2"

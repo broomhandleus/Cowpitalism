@@ -8,4 +8,8 @@
     <color name="primary_material_dark">#161616</color>
     <color name="accent_material_dark">#06962a</color>
     <color name="foreground_material_dark">#9a9a9a</color>
+    <color name="button_pressed">#FF346981</color>
+    <color name="button_focused">#FF346981</color>
+    <color name="button_default">#FF7DD1F7</color>
+    <color name="black">#000000</color>
 </resources>

@@ -355,33 +355,6 @@ public class HostInGameActivity extends AppCompatActivity {
             }
         });
 
-        // Attempting to change the color of the button when it is pressed.
-//        cowButton.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                switch(event.getAction()) {
-//                    case MotionEvent.ACTION_DOWN:
-//                        cowButton.setBackgroundColor(Color.GREEN);
-//                        int addNum;
-//                        if (!numberInput.getText().toString().isEmpty()) {
-//                            addNum = Integer.parseInt(numberInput.getText().toString());
-//                        } else {
-//                            addNum = 1;
-//                        }
-//                        player.cows = player.cows + addNum;
-//                        cowCount.setText("Cows: " + player.cows);
-//                        numberInput.setText("");
-//                        InputMethodManager inputManager = (InputMethodManager)
-//                                getSystemService(Context.INPUT_METHOD_SERVICE);
-//                        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-//                                InputMethodManager.HIDE_NOT_ALWAYS);
-//                    case MotionEvent.ACTION_UP:
-//                        cowButton.setBackgroundColor(Color.GRAY);
-//                }
-//                return true;
-//            }
-//        });
-
         Button horseButton = (Button) findViewById(R.id.horseButton);
         horseButton.setOnClickListener(new View.OnClickListener() {
             @Override

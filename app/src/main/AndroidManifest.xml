@@ -22,22 +22,18 @@
         <activity
             android:name=".activities.RulesActivity"
             android:label="@string/title_activity_rules"
-            android:parentActivityName=".activities.MainActivity"
-            android:theme="@style/CowpitalismTheme" />
+            android:parentActivityName=".activities.MainActivity"/>
         <activity
             android:name=".activities.HostInGameActivity"
             android:label="@string/title_activity_in_game"
-            android:parentActivityName=".activities.MainActivity"
-            android:theme="@style/CowpitalismTheme">
+            android:parentActivityName=".activities.MainActivity"/>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.broomhandleus.maximus.cowpitalism.activities.MainActivity" />
-        </activity>
         <activity
             android:name=".activities.PlayerInGameActivity"
             android:label="@string/title_activity_player_in_game"
-            android:parentActivityName=".activities.MainActivity"
-            android:theme="@style/CowpitalismTheme"></activity>
+            android:parentActivityName=".activities.MainActivity"></activity>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.broomhandleus.maximus.cowpitalism.activities.MainActivity" />

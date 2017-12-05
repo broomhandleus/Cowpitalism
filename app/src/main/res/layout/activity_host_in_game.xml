@@ -388,7 +388,7 @@
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="87dp"
+                    android:layout_marginTop="16dp"
                     android:text="Game Timer"
                     app:layout_constraintHorizontal_bias="0.242"
                     app:layout_constraintLeft_toLeftOf="parent"

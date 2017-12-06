@@ -197,7 +197,8 @@
                     app:layout_constraintTop_toBottomOf="@+id/numberInput"
                     android:layout_marginTop="50dp"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/hayBaleButton"
@@ -213,7 +214,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/horseButton"
@@ -229,7 +231,8 @@
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/gasButton"
@@ -245,7 +248,8 @@
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/barnButton"
@@ -259,7 +263,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/burgerButton"
@@ -274,7 +279,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Switch
                     android:id="@+id/chickenSwitch"
@@ -288,7 +294,7 @@
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.502" />
+                    app:layout_constraintHorizontal_bias="0.502"/>
 
                 <Button
                     android:id="@+id/tankerButton"
@@ -303,7 +309,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/semiButton"
@@ -318,7 +325,8 @@
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/waterTowerButton"
@@ -333,7 +341,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/graveyardButton"
@@ -348,7 +357,8 @@
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView5"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/churchButton"
@@ -363,7 +373,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Chronometer
                     android:id="@+id/chronometer"
@@ -425,7 +436,8 @@
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintHorizontal_bias="0.123"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <Button
                     android:id="@+id/purchaseHorseButton"
@@ -441,7 +453,8 @@
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintHorizontal_bias="0.899"
-                    android:background="@drawable/button_functions"/>
+                    android:background="@drawable/button_functions"
+                    android:textColor="@drawable/text_color"/>
 
                 <TextView
                     android:id="@+id/textView2"

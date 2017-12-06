@@ -12,4 +12,5 @@
     <color name="button_focused">#FF346981</color>
     <color name="button_default">#FF7DD1F7</color>
     <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

@@ -4,14 +4,14 @@
     <item android:state_pressed="true">
         <shape android:shape="rectangle" >
             <corners android:radius="2dip" />
-            <stroke android:width="1dip" android:color="@color/background_material_light_3" />
+            <stroke android:width="1dip" android:color="@color/transparent" />
             <solid android:color="@color/accent_material_light"/>
         </shape>
     </item> <!-- pressed -->
     <item android:state_focused="true">
         <shape android:shape="rectangle" >
             <corners android:radius="2dip" />
-            <stroke android:width="1dip" android:color="@color/background_material_light_3" />
+            <stroke android:width="1dip" android:color="@color/transparent" />
             <solid android:color="@color/accent_material_light"/>
         </shape><!-- focused -->
     </item>

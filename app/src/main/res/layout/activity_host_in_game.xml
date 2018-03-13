@@ -35,11 +35,9 @@
                     android:id="@+id/titleName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:text="player name"
                     android:textColor="@color/accent_material_light"
                     android:textSize="24sp"
@@ -418,6 +416,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="11dp"
                     android:textSize="20sp"
+                    android:textColor="@color/black"
                     app:layout_constraintHorizontal_bias="0.294"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toLeftOf="@+id/cowCount"
@@ -557,5 +556,5 @@
         android:choiceMode="singleChoice"
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
-        android:background="#ff161616"/>
+        android:background="@color/background_material_light_3" />
 </android.support.v4.widget.DrawerLayout>

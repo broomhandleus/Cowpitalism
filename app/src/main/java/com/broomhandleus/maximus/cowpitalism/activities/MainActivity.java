@@ -1,15 +1,20 @@
 package com.broomhandleus.maximus.cowpitalism.activities;
 
+import android.app.ActionBar;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.broomhandleus.maximus.cowpitalism.R;
 import com.broomhandleus.maximus.cowpitalism.types.Player;
@@ -22,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private Button rulesButton;
     private Button joinButton;
     public static final String TAG = "MainActivity";
+    RelativeLayout.LayoutParams layoutparams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +38,9 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this).create();
+                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(MainActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
                 nameInput.setTitle("Player Creation");
                 nameInput.setMessage("Please Choose a Nickname:");
                 nameInput.setView(input);
@@ -48,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 nameInput.show();
+                Button neutral = nameInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 
@@ -55,8 +64,9 @@ public class MainActivity extends AppCompatActivity {
         joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this).create();
+                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(MainActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
                 nameInput.setTitle("Player Creation");
                 nameInput.setMessage("Please Choose a Nickname:");
                 nameInput.setView(input);
@@ -71,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 nameInput.show();
+                Button neutral = nameInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 

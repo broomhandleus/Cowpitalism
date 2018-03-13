@@ -10,16 +10,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -136,8 +137,15 @@ public class HostInGameActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         // Set adapter for the ListView
-        drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));
-
+        drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_activated_1, drawerOptions));
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 3) {
+                    Log.d(TAG, "Leaderboard Button is clicked");
+                }
+            }
+        });
         // Retrieving player name from intent extras
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
@@ -292,8 +300,9 @@ public class HostInGameActivity extends AppCompatActivity {
         playerName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final AlertDialog nameInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(HostInGameActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
                 nameInput.setTitle("Change Player Name");
                 nameInput.setMessage("Please Choose a Nickname:");
                 nameInput.setView(input);
@@ -314,6 +323,10 @@ public class HostInGameActivity extends AppCompatActivity {
                             }
                         });
                 nameInput.show();
+                Button negative = nameInput.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setTextColor(Color.parseColor("#FFA28532"));
+                Button positive = nameInput.getButton(AlertDialog.BUTTON_POSITIVE);
+                positive.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 
@@ -396,8 +409,9 @@ public class HostInGameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!numberInput.getText().toString().isEmpty()) {
                     gasPrice = Double.parseDouble(numberInput.getText().toString());
-                    final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                    final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                     final EditText input = new EditText(HostInGameActivity.this);
+                    input.setTextColor(Color.parseColor("#FF000000"));
                     hayBaleInput.setTitle("User input required");
                     hayBaleInput.setMessage("How many hay bales do you want to use?");
                     hayBaleInput.setView(input);
@@ -419,6 +433,9 @@ public class HostInGameActivity extends AppCompatActivity {
                                 }
                             });
                     hayBaleInput.show();
+                    Button neutral = hayBaleInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    neutral.setTextColor(Color.parseColor("#FFA28532"));
+
                 } else {
                     gasPrice = 0.0;
                     moreMoney = gasPrice;
@@ -494,12 +511,13 @@ public class HostInGameActivity extends AppCompatActivity {
         waterTowerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final AlertDialog horseInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(HostInGameActivity.this);
-                hayBaleInput.setTitle("User input required");
-                hayBaleInput.setMessage("How many horses do you want to convert?");
-                hayBaleInput.setView(input);
-                hayBaleInput.setButton(DialogInterface.BUTTON_NEUTRAL, "Trade 'em!",
+                input.setTextColor(Color.parseColor("#FF000000"));
+                horseInput.setTitle("User input required");
+                horseInput.setMessage("How many horses do you want to convert?");
+                horseInput.setView(input);
+                horseInput.setButton(DialogInterface.BUTTON_NEUTRAL, "Trade 'em!",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -513,7 +531,9 @@ public class HostInGameActivity extends AppCompatActivity {
                                 horseCount.setText("Horses: " + player.horses);
                             }
                         });
-                hayBaleInput.show();
+                horseInput.show();
+                Button neutral = horseInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 
@@ -876,8 +896,6 @@ public class HostInGameActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
     /**
      * A helper method that helps us print out the best name for a device.

@@ -13,10 +13,11 @@
     <color name="button_default">#FF7DD1F7</color>
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
-    <color name="primary_material_light">#5f81df</color>
+    <color name="primary_material_light">#0a1a48</color>
     <color name="background_material_light">#acf85f</color>
     <color name="background_material_light_1">#a5f27c</color>
     <color name="background_material_light_2">#a5f27b</color>
-    <color name="background_material_light_3">#9bf372</color>
-    <color name="accent_material_light">#e743e4</color>
+    <color name="background_material_light_3">#e1e0e0</color>
+    <color name="accent_material_light">#a28532</color>
+    <color name="primary_dark_material_light">#0a1a48</color>
 </resources>

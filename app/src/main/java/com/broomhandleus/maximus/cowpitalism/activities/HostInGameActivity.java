@@ -143,9 +143,19 @@ public class HostInGameActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 3) {
                     Log.d(TAG, "Leaderboard Button is clicked");
+                    final AlertDialog leaderboard = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
+                    leaderboard.setTitle("LeaderBoard");
+                    leaderboard.setButton(AlertDialog.BUTTON_NEUTRAL, "Close", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Nothing to be done, will dismiss
+                            Log.d(TAG, "Closed leaderboard");
+                        }
+                    });
                 }
             }
         });
+
         // Retrieving player name from intent extras
         Bundle extras = getIntent().getExtras();
         if (extras == null) {
@@ -418,9 +428,13 @@ public class HostInGameActivity extends AppCompatActivity {
                     hayBaleInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Done",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
-                                    inputVar = Integer.parseInt(input.getText().toString());
-                                    if (!(inputVar >= 0 && inputVar <= player.hayBales)) {
+                                    if (input.getText().toString().equals("")) {
                                         inputVar = 0;
+                                    } else {
+                                        inputVar = Integer.parseInt(input.getText().toString());
+                                        if (!(inputVar >= 0 && inputVar <= player.hayBales) || (inputVar < 0)) {
+                                            inputVar = 0;
+                                        }
                                     }
                                     moreMoney = gasPrice * player.milk * (1 + (0.01 * inputVar) + (0.03 * player.semis));
                                     player.hayBales -= inputVar;
@@ -521,9 +535,13 @@ public class HostInGameActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                inputVar = Integer.parseInt(input.getText().toString());
-                                if (!(inputVar >= 0 && inputVar <= player.horses)) {
+                                if (input.getText().toString().equals("")) {
                                     inputVar = 0;
+                                } else {
+                                    inputVar = Integer.parseInt(input.getText().toString());
+                                    if (!(inputVar >= 0 && inputVar <= player.horses)) {
+                                        inputVar = 0;
+                                    }
                                 }
                                 player.cows = player.cows + (10 * inputVar);
                                 player.horses -= inputVar;

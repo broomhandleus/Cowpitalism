@@ -4,8 +4,8 @@ package com.broomhandleus.maximus.cowpitalism.activities;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -15,11 +15,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -33,7 +33,6 @@ import com.broomhandleus.maximus.cowpitalism.R;
 import com.broomhandleus.maximus.cowpitalism.types.Player;
 import com.wordpress.simpledevelopments.btcommlib.BTCommChild;
 import com.wordpress.simpledevelopments.btcommlib.Callback;
-
 
 import java.util.HashMap;
 import java.util.Map;

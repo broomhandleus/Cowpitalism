@@ -12,17 +12,15 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.CalendarContract;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -102,8 +100,6 @@ public class HostInGameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host_in_game);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Cowpitalism");
 
         drawerOptions = new String[4];
@@ -141,7 +137,27 @@ public class HostInGameActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         // Set adapter for the ListView
-        drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_1, drawerOptions));
+        drawerList.setAdapter(new ArrayAdapter<String>(HostInGameActivity.this, android.R.layout.simple_list_item_activated_1, drawerOptions));
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 3) {
+                    Log.d(TAG, "Leaderboard Button is clicked");
+                    final AlertDialog leaderboard = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
+                    leaderboard.setTitle("Leaderboard");
+                    leaderboard.setButton(AlertDialog.BUTTON_NEUTRAL, "Close", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Nothing to be done, will dismiss
+                            Log.d(TAG, "Closed leaderboard");
+                        }
+                    });
+                    leaderboard.show();
+                    Button neutral = leaderboard.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    neutral.setTextColor(Color.parseColor("#FFA28532"));
+                }
+            }
+        });
 
         // Retrieving player name from intent extras
         Bundle extras = getIntent().getExtras();
@@ -297,8 +313,9 @@ public class HostInGameActivity extends AppCompatActivity {
         playerName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final AlertDialog nameInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(HostInGameActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
                 nameInput.setTitle("Change Player Name");
                 nameInput.setMessage("Please Choose a Nickname:");
                 nameInput.setView(input);
@@ -319,6 +336,10 @@ public class HostInGameActivity extends AppCompatActivity {
                             }
                         });
                 nameInput.show();
+                Button negative = nameInput.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setTextColor(Color.parseColor("#FFA28532"));
+                Button positive = nameInput.getButton(AlertDialog.BUTTON_POSITIVE);
+                positive.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 
@@ -354,33 +375,6 @@ public class HostInGameActivity extends AppCompatActivity {
                         InputMethodManager.HIDE_NOT_ALWAYS);
             }
         });
-
-        // Attempting to change the color of the button when it is pressed.
-//        cowButton.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                switch(event.getAction()) {
-//                    case MotionEvent.ACTION_DOWN:
-//                        cowButton.setBackgroundColor(Color.GREEN);
-//                        int addNum;
-//                        if (!numberInput.getText().toString().isEmpty()) {
-//                            addNum = Integer.parseInt(numberInput.getText().toString());
-//                        } else {
-//                            addNum = 1;
-//                        }
-//                        player.cows = player.cows + addNum;
-//                        cowCount.setText("Cows: " + player.cows);
-//                        numberInput.setText("");
-//                        InputMethodManager inputManager = (InputMethodManager)
-//                                getSystemService(Context.INPUT_METHOD_SERVICE);
-//                        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-//                                InputMethodManager.HIDE_NOT_ALWAYS);
-//                    case MotionEvent.ACTION_UP:
-//                        cowButton.setBackgroundColor(Color.GRAY);
-//                }
-//                return true;
-//            }
-//        });
 
         Button horseButton = (Button) findViewById(R.id.horseButton);
         horseButton.setOnClickListener(new View.OnClickListener() {
@@ -428,17 +422,22 @@ public class HostInGameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!numberInput.getText().toString().isEmpty()) {
                     gasPrice = Double.parseDouble(numberInput.getText().toString());
-                    final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                    final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                     final EditText input = new EditText(HostInGameActivity.this);
+                    input.setTextColor(Color.parseColor("#FF000000"));
                     hayBaleInput.setTitle("User input required");
                     hayBaleInput.setMessage("How many hay bales do you want to use?");
                     hayBaleInput.setView(input);
                     hayBaleInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Done",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
-                                    inputVar = Integer.parseInt(input.getText().toString());
-                                    if (!(inputVar >= 0 && inputVar <= player.hayBales)) {
+                                    if (input.getText().toString().equals("")) {
                                         inputVar = 0;
+                                    } else {
+                                        inputVar = Integer.parseInt(input.getText().toString());
+                                        if (!(inputVar >= 0 && inputVar <= player.hayBales) || (inputVar < 0)) {
+                                            inputVar = 0;
+                                        }
                                     }
                                     moreMoney = gasPrice * player.milk * (1 + (0.01 * inputVar) + (0.03 * player.semis));
                                     player.hayBales -= inputVar;
@@ -451,6 +450,9 @@ public class HostInGameActivity extends AppCompatActivity {
                                 }
                             });
                     hayBaleInput.show();
+                    Button neutral = hayBaleInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    neutral.setTextColor(Color.parseColor("#FFA28532"));
+
                 } else {
                     gasPrice = 0.0;
                     moreMoney = gasPrice;
@@ -526,18 +528,23 @@ public class HostInGameActivity extends AppCompatActivity {
         waterTowerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog hayBaleInput = new AlertDialog.Builder(HostInGameActivity.this).create();
+                final AlertDialog horseInput = new AlertDialog.Builder(HostInGameActivity.this, R.style.AlertDialogCustom).create();
                 final EditText input = new EditText(HostInGameActivity.this);
-                hayBaleInput.setTitle("User input required");
-                hayBaleInput.setMessage("How many horses do you want to convert?");
-                hayBaleInput.setView(input);
-                hayBaleInput.setButton(DialogInterface.BUTTON_NEUTRAL, "Trade 'em!",
+                input.setTextColor(Color.parseColor("#FF000000"));
+                horseInput.setTitle("User input required");
+                horseInput.setMessage("How many horses do you want to convert?");
+                horseInput.setView(input);
+                horseInput.setButton(DialogInterface.BUTTON_NEUTRAL, "Trade 'em!",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                inputVar = Integer.parseInt(input.getText().toString());
-                                if (!(inputVar >= 0 && inputVar <= player.horses)) {
+                                if (input.getText().toString().equals("")) {
                                     inputVar = 0;
+                                } else {
+                                    inputVar = Integer.parseInt(input.getText().toString());
+                                    if (!(inputVar >= 0 && inputVar <= player.horses)) {
+                                        inputVar = 0;
+                                    }
                                 }
                                 player.cows = player.cows + (10 * inputVar);
                                 player.horses -= inputVar;
@@ -545,7 +552,9 @@ public class HostInGameActivity extends AppCompatActivity {
                                 horseCount.setText("Horses: " + player.horses);
                             }
                         });
-                hayBaleInput.show();
+                horseInput.show();
+                Button neutral = horseInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setTextColor(Color.parseColor("#FFA28532"));
             }
         });
 
@@ -908,8 +917,6 @@ public class HostInGameActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
     /**
      * A helper method that helps us print out the best name for a device.

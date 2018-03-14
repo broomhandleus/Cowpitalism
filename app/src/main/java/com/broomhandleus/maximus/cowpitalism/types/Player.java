@@ -4,7 +4,7 @@ package com.broomhandleus.maximus.cowpitalism.types;
  * Class representing a single player of Cowpitalism
  */
 
-public class Player {
+public class Player implements Comparable<Player> {
 
     public String name;
     public int cows;
@@ -32,5 +32,16 @@ public class Player {
 
         // everyone should have a kitty... or 5
         kitties = (int) (5 * Math.random());
+    }
+
+    // Makes the objects comparable for sorting
+    public int compareTo(Player other) {
+        if (this.cows > other.cows) {
+            return 1;
+        } else if (this.cows < other.cows){
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }

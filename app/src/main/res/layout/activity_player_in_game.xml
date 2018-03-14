@@ -20,33 +20,20 @@
                 android:layout_height="match_parent"
                 tools:context="com.broomhandleus.maximus.cowpitalism.activities.PlayerInGameActivity">
 
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/colorPrimary"
-                    android:theme="?attr/actionBarTheme"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <TextView
                     android:id="@+id/titleName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:text="player name"
-                    android:textColor="#FF99CC00"
+                    android:textColor="@color/accent_material_light"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/cowCount"
@@ -60,6 +47,7 @@
                     android:text="Cows: 0"
                     android:textSize="20sp"
                     android:textStyle="bold"
+                    android:textColor="@color/black"
                     app:layout_constraintHorizontal_bias="0.501"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -74,6 +62,7 @@
                     android:layout_marginTop="16dp"
                     android:text="Money: $0"
                     android:textSize="16sp"
+                    android:textColor="@color/black"
                     app:layout_constraintTop_toBottomOf="@+id/milkCount"
                     android:layout_marginLeft="61dp"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -88,6 +77,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Barns: 0"
+                    android:textColor="@color/black"
                     android:textSize="16sp"
                     android:layout_marginTop="10dp"
                     app:layout_constraintTop_toBottomOf="@+id/horseCount"
@@ -105,6 +95,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="15dp"
                     android:text="Horses: 0"
+                    android:textColor="@color/black"
                     android:textSize="16sp"
                     app:layout_constraintTop_toBottomOf="@+id/milkCount"
                     android:layout_marginRight="8dp"
@@ -120,6 +111,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Semis: 0"
+                    android:textColor="@color/black"
                     android:textSize="16sp"
                     android:layout_marginTop="8dp"
                     app:layout_constraintTop_toBottomOf="@+id/barnCount"
@@ -136,6 +128,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Tankers: 0"
+                    android:textColor="@color/black"
                     android:textSize="16sp"
                     android:layout_marginTop="8dp"
                     app:layout_constraintTop_toBottomOf="@+id/hayBaleCount"
@@ -152,6 +145,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Hay Bales: 0"
+                    android:textColor="@color/black"
                     android:textSize="16sp"
                     android:layout_marginTop="9dp"
                     app:layout_constraintTop_toBottomOf="@+id/moneyCount"
@@ -174,8 +168,9 @@
                     app:layout_constraintHorizontal_bias="0.503"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    android:layout_marginTop="102dp"
-                    app:layout_constraintTop_toBottomOf="@+id/milkCount" />
+                    android:background="@drawable/input_style"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
                 <TextView
                     android:id="@+id/milkCount"
@@ -187,6 +182,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="18dp"
                     android:text="Milk: 0 gallons"
+                    android:textColor="@color/black"
                     android:textSize="18sp"
                     app:layout_constraintHorizontal_bias="0.501"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -202,41 +198,43 @@
                     android:layout_marginRight="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Cows"
+                    android:textColor="@drawable/text_color"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/numberInput"
-                    android:layout_marginTop="50dp"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/numberInput" />
 
                 <Button
                     android:id="@+id/hayBaleButton"
                     android:layout_width="150dp"
                     android:layout_height="48dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:text="Hay Bales"
-                    android:layout_marginTop="0dp"
-                    app:layout_constraintTop_toBottomOf="@+id/cowButton"
                     android:layout_marginLeft="8dp"
-                    app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_functions"
+                    android:text="Hay Bales"
+                    android:textColor="@drawable/text_color"
+                    app:layout_constraintHorizontal_bias="0.123"
+                    app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintTop_toBottomOf="@+id/cowButton" />
 
                 <Button
                     android:id="@+id/horseButton"
                     android:layout_width="150dp"
                     android:layout_height="48dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:text="Horses"
-                    android:layout_marginTop="0dp"
-                    app:layout_constraintTop_toBottomOf="@+id/gasButton"
-                    android:layout_marginRight="8dp"
-                    app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_functions"
+                    android:text="Horses"
+                    android:textColor="@drawable/text_color"
+                    app:layout_constraintHorizontal_bias="0.899"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/gasButton" />
 
                 <Button
                     android:id="@+id/gasButton"
@@ -245,13 +243,15 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Gas"
-                    android:layout_marginTop="50dp"
-                    app:layout_constraintTop_toBottomOf="@+id/numberInput"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/numberInput" />
 
                 <Button
                     android:id="@+id/barnButton"
@@ -259,40 +259,44 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Barn"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="64dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView2"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
-                    app:layout_constraintLeft_toLeftOf="parent" />
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/burgerButton"
                     android:layout_width="150dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="Burger Joint!"
-                    android:layout_marginTop="-6dp"
-                    app:layout_constraintTop_toBottomOf="@+id/graveyardButton"
                     android:layout_marginLeft="8dp"
-                    app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_functions"
+                    android:text="Burger Joint!"
+                    android:textColor="@drawable/text_color"
+                    app:layout_constraintHorizontal_bias="0.899"
+                    app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintTop_toBottomOf="@+id/graveyardButton" />
 
                 <Switch
                     android:id="@+id/chickenSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="115dp"
                     android:layout_weight="1"
                     android:text="Chicken Shield"
-                    android:layout_marginTop="107dp"
-                    app:layout_constraintTop_toBottomOf="@+id/textView5"
-                    android:layout_marginRight="8dp"
-                    app:layout_constraintRight_toRightOf="parent"
-                    android:layout_marginLeft="8dp"
+                    app:layout_constraintHorizontal_bias="0.502"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.502" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
                 <Button
                     android:id="@+id/tankerButton"
@@ -300,13 +304,15 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Tanker"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="10dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView2"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/semiButton"
@@ -314,27 +320,31 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Semi"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="10dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView2"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/waterTowerButton"
                     android:layout_width="150dp"
                     android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="Water Tower"
-                    android:layout_marginTop="-25dp"
-                    app:layout_constraintTop_toBottomOf="@+id/churchButton"
                     android:layout_marginLeft="8dp"
-                    app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_functions"
+                    android:text="Water Tower"
+                    android:textColor="@drawable/text_color"
+                    app:layout_constraintHorizontal_bias="0.123"
+                    app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintTop_toBottomOf="@+id/churchButton" />
 
                 <Button
                     android:id="@+id/graveyardButton"
@@ -345,10 +355,12 @@
                     android:layout_marginTop="10dp"
                     android:layout_weight="1"
                     android:text="Graveyard"
+                    android:textColor="@drawable/text_color"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView5"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/churchButton"
@@ -356,13 +368,15 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Church"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="10dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView5"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Chronometer
                     android:id="@+id/chronometer"
@@ -374,6 +388,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="11dp"
                     android:textSize="20sp"
+                    android:textColor="@color/black"
                     app:layout_constraintHorizontal_bias="0.294"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toLeftOf="@+id/cowCount"
@@ -387,8 +402,9 @@
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="87dp"
+                    android:layout_marginTop="16dp"
                     android:text="Game Timer"
+                    android:textColor="@color/black"
                     app:layout_constraintHorizontal_bias="0.242"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toLeftOf="@+id/titleName"
@@ -404,6 +420,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="13dp"
                     android:text="Purchase:   "
+                    android:textColor="@color/black"
                     android:textSize="20sp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -417,13 +434,15 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Cow"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="0dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintHorizontal_bias="0.123" />
+                    app:layout_constraintHorizontal_bias="0.123"
+                    android:background="@drawable/button_functions"/>
 
                 <Button
                     android:id="@+id/purchaseHorseButton"
@@ -432,13 +451,15 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:text="Horse"
+                    android:textColor="@drawable/text_color"
                     android:layout_marginTop="-2dp"
                     app:layout_constraintTop_toBottomOf="@+id/textView"
                     android:layout_marginRight="8dp"
                     app:layout_constraintRight_toRightOf="parent"
                     android:layout_marginLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintHorizontal_bias="0.899" />
+                    app:layout_constraintHorizontal_bias="0.899"
+                    android:background="@drawable/button_functions"/>
 
                 <TextView
                     android:id="@+id/textView2"
@@ -446,6 +467,7 @@
                     android:layout_height="wrap_content"
                     android:text="Single Collection:"
                     android:textSize="20sp"
+                    android:textColor="@color/black"
                     android:layout_marginTop="21dp"
                     app:layout_constraintTop_toBottomOf="@+id/chickenSwitch"
                     android:layout_marginRight="8dp"
@@ -460,12 +482,13 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginTop="14dp"
                     android:text="Input Collection:"
                     android:textSize="20sp"
+                    android:textColor="@color/black"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/numberInput" />
+                    android:layout_marginTop="107dp"
+                    app:layout_constraintTop_toBottomOf="@+id/milkCount" />
 
                 <TextView
                     android:id="@+id/textView5"
@@ -473,13 +496,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginTop="121dp"
                     android:text="Landmarks:"
                     android:textSize="20sp"
+                    android:textColor="@color/black"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView4"
-                    app:layout_constraintHorizontal_bias="0.501" />
+                    app:layout_constraintHorizontal_bias="0.501"
+                    android:layout_marginTop="126dp"
+                    app:layout_constraintTop_toBottomOf="@+id/numberInput" />
 
                 <Space
                     android:layout_width="300dp"
@@ -502,5 +526,5 @@
         android:choiceMode="singleChoice"
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
-        android:background="#ff161616"/>
+        android:background="#2f2f2f"/>
 </android.support.v4.widget.DrawerLayout>

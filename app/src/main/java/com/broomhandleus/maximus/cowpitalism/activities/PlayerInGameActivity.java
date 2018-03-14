@@ -147,7 +147,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
                 if (position == 0) {
                     Log.d(TAG, "Leaderboard Button is clicked");
                     final AlertDialog leaderboard = new AlertDialog.Builder(PlayerInGameActivity.this, R.style.AlertDialogCustom).create();
-                    leaderboard.setTitle("LeaderBoard");
+                    leaderboard.setTitle("Leaderboard");
                     leaderboard.setButton(AlertDialog.BUTTON_NEUTRAL, "Close", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -155,6 +155,9 @@ public class PlayerInGameActivity extends AppCompatActivity {
                             Log.d(TAG, "Closed leaderboard");
                         }
                     });
+                    leaderboard.show();
+                    Button neutral = leaderboard.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    neutral.setTextColor(Color.parseColor("#FFA28532"));
                 }
             }
         });

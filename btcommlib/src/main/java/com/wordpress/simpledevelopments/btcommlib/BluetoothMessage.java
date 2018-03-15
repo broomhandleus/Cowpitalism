@@ -11,12 +11,10 @@ import java.util.UUID;
  * body - A string beng sent in the message.
  *
  * Upon connecting to the game-hosting device, the first thing a player
- *  should do is send a message with type=Type.JOIN_REQUEST and value=JOIN_REQUEST_VALUE.
- *  This will allow the game-host to verify that the player is in fact running Cowpitalism
+ *  should do is send a message with type=Type.JOIN_REQUEST
  *
  */
 public class BluetoothMessage implements Serializable {
-    public static final String JOIN_REQUEST_CONTENT = "12345";
     public enum Type {
         INTERNAL_USE,
         CLIENT_USE,

@@ -104,7 +104,7 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
         return mBluetoothAdapter.isEnabled();
     }
 
-    public void obtainParent(Callback callback) {
+    public void obtainParent(final String myName, Callback callback) {
         if (!checkBTEnabled()) {
             Log.e(TAG, "Bluetooth not enabled!");
             return;
@@ -146,7 +146,7 @@ public class BTCommChild implements ActivityCompat.OnRequestPermissionsResultCal
                 Log.v(TAG, "Starting default playerAcceptThread: " + playerAcceptThread);
                 playerAcceptThread.start();
 
-                BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_REQUEST", BluetoothMessage.JOIN_REQUEST_CONTENT);
+                BluetoothMessage joinMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_REQUEST", myName);
                 SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(hostDevice, uuidList[0], joinMessage);
                 executor.submit(sendMessageRunnable);
 

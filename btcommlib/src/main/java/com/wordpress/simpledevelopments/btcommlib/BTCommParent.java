@@ -35,7 +35,7 @@ public class BTCommParent {
     // Bluetooth-Related
     private BluetoothAdapter mBluetoothAdapter;
     private volatile boolean discoverable;
-    private List<BluetoothDevice> potentialPlayers;
+    private List<NameDevicePair> potentialPlayers;
     private BluetoothDevice[] childList;
     private ExecutorService[] executorsList;
 
@@ -46,6 +46,8 @@ public class BTCommParent {
     private UUID[] uuidList;
     private String serviceName;
     private final Map<String, Callback> messageActions;
+    private Callback newChildAction;
+
 
 
     public BTCommParent(AppCompatActivity contextActivity, String serviceName, UUID[] uuidList) {
@@ -73,7 +75,6 @@ public class BTCommParent {
         for (int i = 0; i < MAX_DEVICES; i++) {
             this.uuidList[i] = uuidList[i];
         }
-        // Do a complete (but shallow) copy of the map of MessageActions
         this.messageActions = new HashMap<>();
 
 
@@ -144,7 +145,7 @@ public class BTCommParent {
          * channel (0) and will only listen on this given channelUUID.
          */
         for (int i = 0 ; i < potentialPlayers.size(); i++) {
-            childList[i] = potentialPlayers.get(i);
+            childList[i] = potentialPlayers.get(i).device;
             Log.d(TAG, "Adding " + deviceName(childList[i]) + " to position " + i);
 
             hostAcceptThreads[i] = new AcceptThread(i);
@@ -154,6 +155,12 @@ public class BTCommParent {
             BluetoothMessage joinResponseMessage = new BluetoothMessage(BluetoothMessage.Type.INTERNAL_USE,"JOIN_RESPONSE",Integer.toString(i));
             SendMessageRunnable sendMessageRunnable = new SendMessageRunnable(childList[i],uuidList[0],joinResponseMessage);
             executorsList[i].submit(sendMessageRunnable);
+
+            // TODO: call callback for added new player
+            if (newChildAction != null) {
+                newChildAction.action(i,potentialPlayers.get(i).name);
+            }
+
         }
         Log.d(TAG, "-----------------------");
     }
@@ -163,6 +170,14 @@ public class BTCommParent {
      */
     public void addMessageActions(Map<String, Callback> messageActions) {
         this.messageActions.putAll(messageActions);
+    }
+
+    /**
+     * Sets the action that occurs when a new child is added to this parent
+     * @param newChildAction
+     */
+    public void setNewChildAction(Callback newChildAction) {
+        this.newChildAction = newChildAction;
     }
 
     /**
@@ -275,12 +290,18 @@ public class BTCommParent {
                  * All the logic for different kinds of messages goes here.
                  */
                 if (inMessage.type == BluetoothMessage.Type.INTERNAL_USE) {
-                    if (inMessage.contentType.equals("JOIN_REQUEST")
-                            && inMessage.content.equals(BluetoothMessage.JOIN_REQUEST_CONTENT)) {
+                    if (inMessage.contentType.equals("JOIN_REQUEST")) {
                         if (discoverable) {
                             Log.v(TAG, "Recv'd Join request from: " + deviceName(socket.getRemoteDevice()));
-                            if (!potentialPlayers.contains(socket.getRemoteDevice())) {
-                                potentialPlayers.add(socket.getRemoteDevice());
+                            boolean alreadyJoined = false;
+                            for (int i = 0; i < potentialPlayers.size(); i++) {
+                                if (potentialPlayers.get(i).device.equals(socket.getRemoteDevice())) {
+                                    alreadyJoined = true;
+                                    break;
+                                }
+                            }
+                            if (!alreadyJoined) {
+                                potentialPlayers.add(new NameDevicePair(inMessage.content,socket.getRemoteDevice()));
                             }
                             Log.d(TAG, deviceName(socket.getRemoteDevice()) + " trying to join!");
                         } else {

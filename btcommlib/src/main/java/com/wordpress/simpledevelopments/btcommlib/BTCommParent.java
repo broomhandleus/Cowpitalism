@@ -77,8 +77,6 @@ public class BTCommParent {
         }
         this.messageActions = new HashMap<>();
 
-
-
         // Initialize lists
         childList = new BluetoothDevice[MAX_DEVICES];
         executorsList = new ExecutorService[MAX_DEVICES];
@@ -130,7 +128,6 @@ public class BTCommParent {
         // Stop initial accept thread
         hostAcceptThreads[0].cancel();
         hostAcceptThreads[0] = null;
-
 
         // Ensure we clear out the childList from a previous game (maybe not necessary)
         for (int i = 0; i < MAX_DEVICES; i++) {

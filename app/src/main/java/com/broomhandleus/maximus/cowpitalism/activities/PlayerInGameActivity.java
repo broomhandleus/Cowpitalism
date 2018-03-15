@@ -196,7 +196,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
 
         // Game Timer
         gameTimer = (Chronometer) findViewById(R.id.chronometer);
-        btCommChild.obtainParent(new Callback() {
+        btCommChild.obtainParent(playerName.getText().toString(), new Callback() {
             @Override
             public void action(int childIndex, String argument) {
                 Log.d(TAG, "Timer start!");

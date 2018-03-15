@@ -550,10 +550,6 @@ public class HostInGameActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();

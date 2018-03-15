@@ -166,6 +166,22 @@ public class HostInGameActivity extends AppCompatActivity {
 
         btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);
 
+        //
+        btCommParent.setNewChildAction(new Callback() {
+            @Override
+            public void action(int childIndex, String argument) {
+                //TODO: MAX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //TODO: This will be called with the player index and the name of the player
+                //TODO: This may be useful if you want to keep a list of player objects
+                //TODO: Or at the very least an assoctiation between player indices and player names
+                //TODO: since each message action gives you the index of the player that sent the messgae
+                //TODO: You should be able to use this callback to add members to your player list
+                //TODO: then add message action(s) below that update(s) the score count for that player
+                //TODO: (which may include adding a line or two to the graveyard and burger joint actions
+                //TODO: so that you keep the local copy of the scores up to date in all cases
+            }
+        });
+
         btCommParent.enableBluetooth();
 
         Map<String, Callback> messageActions = new HashMap<>();

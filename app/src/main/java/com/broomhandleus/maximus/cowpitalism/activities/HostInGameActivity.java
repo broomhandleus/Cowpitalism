@@ -161,7 +161,6 @@ public class HostInGameActivity extends AppCompatActivity {
         } else {
             player = new Player(extras.getString("PLAYER_NAME"));
             Log.d(TAG, "Player name " + player.name + ", " + extras.getString("PLAYER_NAME"));
-
         }
 
         btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);
@@ -371,6 +370,7 @@ public class HostInGameActivity extends AppCompatActivity {
                                     player.milk = 0;
                                     hayBaleCount.setText("Hay Bales: " + player.hayBales);
                                     player.money += moreMoney;
+                                    player.money = Math.round(player.money * 100.0) / 100.0;
                                     moneyCount.setText("Money: $" + player.money);
                                     milkCount.setText("Milk: 0 gallons");
                                     hayBaleInput.dismiss();

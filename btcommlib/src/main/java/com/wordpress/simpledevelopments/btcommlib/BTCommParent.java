@@ -494,7 +494,9 @@ public class BTCommParent {
     }
 
     public void destroy() {
-        discoverableThread.interrupt();
+        if (discoverableThread != null) {
+            discoverableThread.interrupt();
+        }
         try {
             contextActivity.unregisterReceiver(discoverableReceiver);
         } catch (IllegalArgumentException ex) {

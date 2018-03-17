@@ -58,9 +58,26 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent screenSwitch = new Intent(getApplication(), HostInGameActivity.class);
-                screenSwitch.putExtra("PLAYER_NAME", playerName);
-                startActivity(screenSwitch);
+                final AlertDialog nameInput = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogCustom).create();
+                final EditText input = new EditText(MainActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
+                nameInput.setTitle("Player Creation");
+                nameInput.setMessage("Please Choose a Nickname:");
+                nameInput.setView(input);
+                nameInput.setButton(AlertDialog.BUTTON_NEUTRAL, "Let's make some cows",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                playerName = input.getText().toString();
+                                nameTextView.setText(playerName);
+                                Intent screenSwitch = new Intent(getApplication(), HostInGameActivity.class);
+                                screenSwitch.putExtra("PLAYER_NAME", playerName);
+                                startActivity(screenSwitch);
+                            }
+                        });
+                nameInput.show();
+                Button neutral = nameInput.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setTextColor(Color.parseColor("#FFA28532"));
+
             }
         });
 

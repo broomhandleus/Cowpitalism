@@ -161,20 +161,18 @@ public class HostInGameActivity extends AppCompatActivity {
         } else {
             player = new Player(extras.getString("PLAYER_NAME"));
             Log.d(TAG, "Player name " + player.name + ", " + extras.getString("PLAYER_NAME"));
-
         }
 
         btCommParent = new BTCommParent(this,SERVICE_NAME,MY_UUIDS);
 
-        //
         btCommParent.setNewChildAction(new Callback() {
             @Override
             public void action(int childIndex, String argument) {
                 //TODO: MAX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 //TODO: This will be called with the player index and the name of the player
                 //TODO: This may be useful if you want to keep a list of player objects
-                //TODO: Or at the very least an assoctiation between player indices and player names
-                //TODO: since each message action gives you the index of the player that sent the messgae
+                //TODO: Or at the very least an association between player indices and player names
+                //TODO: since each message action gives you the index of the player that sent the message
                 //TODO: You should be able to use this callback to add members to your player list
                 //TODO: then add message action(s) below that update(s) the score count for that player
                 //TODO: (which may include adding a line or two to the graveyard and burger joint actions
@@ -372,6 +370,7 @@ public class HostInGameActivity extends AppCompatActivity {
                                     player.milk = 0;
                                     hayBaleCount.setText("Hay Bales: " + player.hayBales);
                                     player.money += moreMoney;
+                                    player.money = Math.round(player.money * 100.0) / 100.0;
                                     moneyCount.setText("Money: $" + player.money);
                                     milkCount.setText("Milk: 0 gallons");
                                     hayBaleInput.dismiss();
@@ -550,10 +549,6 @@ public class HostInGameActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-
-
-
 
     @Override
     protected void onDestroy() {

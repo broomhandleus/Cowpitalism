@@ -152,6 +152,42 @@ public class PlayerInGameActivity extends AppCompatActivity {
             Log.d(TAG, "Player name " + player.name + ", " + extras.getString("PLAYER_NAME"));
         }
 
+        // Name Instantiation
+        playerName = (TextView) findViewById(R.id.titleName);
+        playerName.setText(player.name.toUpperCase());
+        playerName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog nameInput = new AlertDialog.Builder(PlayerInGameActivity.this, R.style.AlertDialogCustom).create();
+                final EditText input = new EditText(PlayerInGameActivity.this);
+                input.setTextColor(Color.parseColor("#FF000000"));
+                nameInput.setTitle("Change Player Name");
+                nameInput.setMessage("Please Choose a Nickname:");
+                nameInput.setView(input);
+                nameInput.setButton(DialogInterface.BUTTON_POSITIVE, "Change",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                player.name = input.getText().toString();
+                                playerName.setText(player.name.toUpperCase());
+                                nameInput.dismiss();
+                            }
+                        });
+                nameInput.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                nameInput.dismiss();
+                            }
+                        });
+                nameInput.show();
+                Button negative = nameInput.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setTextColor(Color.parseColor("#FFA28532"));
+                Button positive = nameInput.getButton(AlertDialog.BUTTON_POSITIVE);
+                positive.setTextColor(Color.parseColor("#FFA28532"));
+            }
+        });
+
         btCommChild = new BTCommChild(this, SERVICE_NAME, MY_UUIDS);
 
         Map<String, Callback> messageActions = new HashMap<>();
@@ -218,44 +254,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
             }
         });
 
-
-
-        // TextView Instantiations
-        playerName = (TextView) findViewById(R.id.titleName);
-        playerName.setText(player.name.toUpperCase());
-        playerName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final AlertDialog nameInput = new AlertDialog.Builder(PlayerInGameActivity.this, R.style.AlertDialogCustom).create();
-                final EditText input = new EditText(PlayerInGameActivity.this);
-                input.setTextColor(Color.parseColor("#FF000000"));
-                nameInput.setTitle("Change Player Name");
-                nameInput.setMessage("Please Choose a Nickname:");
-                nameInput.setView(input);
-                nameInput.setButton(DialogInterface.BUTTON_POSITIVE, "Change",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                player.name = input.getText().toString();
-                                playerName.setText(player.name.toUpperCase());
-                                nameInput.dismiss();
-                            }
-                        });
-                nameInput.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                nameInput.dismiss();
-                            }
-                        });
-                nameInput.show();
-                Button negative = nameInput.getButton(AlertDialog.BUTTON_NEGATIVE);
-                negative.setTextColor(Color.parseColor("#FFA28532"));
-                Button positive = nameInput.getButton(AlertDialog.BUTTON_POSITIVE);
-                positive.setTextColor(Color.parseColor("#FFA28532"));
-            }
-        });
-
+        // Text View Instantiations
         cowCount = (TextView) findViewById(R.id.cowCount);
         milkCount = (TextView) findViewById(R.id.milkCount);
         moneyCount = (TextView) findViewById(R.id.moneyCount);
@@ -357,6 +356,7 @@ public class PlayerInGameActivity extends AppCompatActivity {
                                     player.milk = 0;
                                     hayBaleCount.setText("Hay Bales: " + player.hayBales);
                                     player.money += moreMoney;
+                                    player.money = Math.round(player.money * 100.0) / 100.0;
                                     moneyCount.setText("Money: $" + player.money);
                                     milkCount.setText("Milk: 0 gallons");
                                     hayBaleInput.dismiss();
